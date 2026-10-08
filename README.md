@@ -1,8 +1,13 @@
+
 # ShipNow API
 
-Pre-entrega del Módulo 1 de Programación Backend III.
+Pre-entregas de los Módulos 1 y 2 de Programación Backend III.
 
-El objetivo del proyecto es refactorizar la API ShipNow utilizando una arquitectura profesional por capas, separando las responsabilidades entre Controller, Service y Repository.
+Este proyecto consiste en una API desarrollada con Node.js, Express y MongoDB para la gestión de usuarios, productos, pedidos y entregas.
+
+En el Módulo 1 se trabajó en la refactorización de la API mediante una arquitectura por capas.
+
+En el Módulo 2 se incorporó un módulo de mocking para generar datos ficticios y almacenarlos en MongoDB, respetando los modelos y las relaciones entre entidades.
 
 ## Tecnologías utilizadas
 
@@ -10,9 +15,12 @@ El objetivo del proyecto es refactorizar la API ShipNow utilizando una arquitect
 - Express
 - MongoDB
 - Mongoose
+- JavaScript (ES Modules)
 - dotenv
 - CORS
 - Nodemon
+- @faker-js/faker
+- bcryptjs
 
 ## Arquitectura
 
@@ -34,7 +42,7 @@ MongoDB
 
 ### Controller
 
-Los Controllers se encargan de recibir las peticiones HTTP mediante `req`, llamar al Service correspondiente y devolver la respuesta mediante `res` con el código HTTP apropiado.
+Los Controllers reciben las peticiones HTTP mediante `req`, llaman al Service correspondiente y devuelven las respuestas mediante `res`, utilizando los códigos HTTP apropiados.
 
 Los Controllers no realizan consultas directas a MongoDB.
 
@@ -42,22 +50,46 @@ Los Controllers no realizan consultas directas a MongoDB.
 
 Los Services contienen la lógica de negocio de la aplicación.
 
-Por ejemplo:
+Entre sus responsabilidades se encuentran:
 
 - Validar usuarios existentes.
 - Evitar la creación de administradores desde el endpoint público.
 - Validar los datos de los productos.
 - Determinar el estado de un producto según su stock.
 - Filtrar productos disponibles.
-- Calcular el costo de envío.
+- Calcular costos de envío.
+- Generar datos simulados.
+- Coordinar la creación de registros relacionados.
 
 ### Repository
 
-Los Repositories son los encargados exclusivamente del acceso a los datos.
+Los Repositories se encargan del acceso a los datos.
 
-Todas las operaciones de Mongoose como `find`, `findById`, `findOne`, `create`, `findByIdAndUpdate` y `findByIdAndDelete` se encuentran centralizadas en esta capa.
+Las operaciones de Mongoose, como `find`, `findById`, `findOne`, `create`, `findByIdAndUpdate` y `findByIdAndDelete`, se centralizan en esta capa.
 
-Esta separación permite que la lógica de negocio del Service sea independiente de los detalles de acceso a MongoDB.
+Esta separación permite mantener la lógica de negocio independiente del acceso a MongoDB.
+
+## Instalación
+
+Clonar el repositorio:
+
+```bash
+git clone https://github.com/gastoneze15/Backend-3.git
+```
+
+Ingresar a la carpeta del proyecto:
+
+```bash
+cd Backend-3
+```
+
+Instalar las dependencias:
+
+```bash
+npm install
+```
+
+Es necesario contar con Node.js y MongoDB instalados.
 
 ## Variables de entorno
 
@@ -67,31 +99,9 @@ La configuración se encuentra centralizada en:
 src/config/env.config.js
 ```
 
-La aplicación requiere las siguientes variables:
-
-```env
-PORT=
-MONGODB_URI=
-NODE_ENV=
-```
-
-Se incluye un archivo `.env.example` como referencia.
-
-El archivo `.env` real no se incluye en el repositorio por seguridad.
-
-Si alguna variable requerida no está configurada, la aplicación se detiene mostrando un error indicando qué variable falta.
-
-## Instalación
-
-Clonar el repositorio e instalar las dependencias:
-
-```bash
-npm install
-```
-
 Crear un archivo `.env` en la raíz del proyecto tomando como referencia `.env.example`.
 
-Ejemplo para desarrollo local:
+Ejemplo de configuración:
 
 ```env
 PORT=8080
@@ -99,33 +109,43 @@ MONGODB_URI=mongodb://localhost:27017/shipnow
 NODE_ENV=development
 ```
 
-Es necesario tener MongoDB ejecutándose localmente.
+Para probar el módulo de mocks se recomienda utilizar una base de datos independiente:
+
+```env
+PORT=8080
+MONGODB_URI=mongodb://localhost:27017/shipnow_mocks
+NODE_ENV=development
+```
+
+Esto permite realizar pruebas sin modificar los registros de la base de datos original.
+
+El archivo `.env` no se incluye en el repositorio por seguridad.
 
 ## Ejecución
 
-Modo desarrollo:
+Asegurarse de que MongoDB esté ejecutándose.
+
+Iniciar el servidor con:
 
 ```bash
-npm run dev
+node src/server.js
 ```
 
-Modo producción:
+La API estará disponible en:
 
-```bash
-npm start
-```
-
-La API estará disponible por defecto en:
-
-```text
 http://localhost:8080
-```
 
-## Endpoints
+## Módulo 1: Arquitectura por capas
+
+En la primera pre-entrega se reorganizó la API utilizando las capas Controller, Service y Repository.
+
+Se implementaron operaciones relacionadas con usuarios y productos, validaciones y el uso de constantes para evitar valores escritos directamente en el código.
+
+### Endpoints principales
 
 | Método | Ruta | Descripción |
-| --- | --- | --- |
-| GET | `/api/health` | Health check |
+|---|---|---|
+| GET | `/api/health` | Verificar el estado de la API |
 | GET | `/api/users` | Listar usuarios |
 | GET | `/api/users/:id` | Obtener usuario por ID |
 | POST | `/api/users` | Crear usuario |
@@ -137,19 +157,169 @@ http://localhost:8080
 | POST | `/api/products` | Crear producto |
 | PUT | `/api/products/:id` | Actualizar producto |
 | DELETE | `/api/products/:id` | Eliminar producto |
-| GET | `/api/products/:id/shipping-cost` | Calcular costo de envío |
+| GET | `/api/products/:id/shipping-cost` | Calcular el costo de envío |
 
-## Constantes
+## Módulo 2: Generación de Mocks
 
-Los roles de usuario y estados de producto se encuentran centralizados en:
+Se incorporó un módulo de mocking para generar datos ficticios de clientes, repartidores, pedidos y entregas.
+
+La implementación utiliza `@faker-js/faker` para crear información simulada y `bcryptjs` para almacenar las contraseñas de los usuarios generados mediante hashes.
+
+El módulo respeta la arquitectura por capas y utiliza los modelos reales del proyecto.
+
+### Endpoints de mocks
+
+| Método | Ruta | Descripción |
+|---|---|---|
+| GET | `/api/mocks/users` | Generar 10 clientes ficticios sin guardarlos |
+| GET | `/api/mocks/drivers` | Generar 10 repartidores ficticios sin guardarlos |
+| POST | `/api/mocks/generate` | Insertar usuarios, pedidos y entregas en MongoDB |
+
+Los endpoints GET generan datos en memoria y no los almacenan en la base de datos.
+
+Las respuestas de estos endpoints no incluyen las contraseñas.
+
+### Generación de registros
+
+El endpoint `POST /api/mocks/generate` crea:
+
+- 5 clientes con rol `customer`.
+- 3 repartidores con rol `driver`.
+- 5 pedidos asociados a clientes.
+- 5 entregas asociadas a pedidos y repartidores.
+
+Los registros se almacenan en MongoDB.
+
+Cada ejecución del endpoint genera un nuevo conjunto de datos.
+
+### Relaciones entre entidades
+
+Los datos generados mantienen las siguientes relaciones:
+
+- Cada pedido referencia a un cliente existente.
+- Cada entrega referencia a un pedido existente.
+- Cada entrega tiene un repartidor asignado.
+- Cada pedido referencia a su entrega correspondiente.
+
+Las relaciones se implementan utilizando identificadores `ObjectId` de MongoDB.
+
+### Roles, estados y prioridades
+
+Los datos generados respetan las constantes definidas en:
 
 ```text
 src/constants/index.js
 ```
 
-Se utilizan objetos `Object.freeze` para evitar modificaciones accidentales y eliminar strings mágicos del código.
+Se utilizan constantes para:
 
-## Estructura principal
+- Roles de usuario.
+- Estados de pedidos.
+- Estados de entregas.
+- Prioridades de entregas.
+
+Esto permite mantener consistencia con los modelos de Mongoose y evitar valores incorrectos.
+
+## Pruebas del módulo de mocks con Postman
+
+Para realizar las pruebas:
+
+1. Iniciar MongoDB.
+2. Configurar el archivo `.env` con `NODE_ENV=development`.
+3. Iniciar el servidor con `node src/server.js`.
+4. Abrir Postman y ejecutar las siguientes peticiones.
+
+### 1. Generar clientes simulados
+
+**Método:** GET
+
+**URL:**
+
+```text
+http://localhost:8080/api/mocks/users
+```
+
+**Respuesta esperada:** `200 OK`
+
+El endpoint devuelve 10 clientes ficticios con el rol `customer`.
+
+Los usuarios generados no se almacenan en MongoDB.
+
+### 2. Generar repartidores simulados
+
+**Método:** GET
+
+**URL:**
+
+```text
+http://localhost:8080/api/mocks/drivers
+```
+
+**Respuesta esperada:** `200 OK`
+
+El endpoint devuelve 10 repartidores ficticios con el rol `driver`.
+
+Los repartidores generados no se almacenan en MongoDB.
+
+### 3. Insertar datos de prueba en MongoDB
+
+**Método:** POST
+
+**URL:**
+
+```text
+http://localhost:8080/api/mocks/generate
+```
+
+No requiere enviar un body.
+
+**Respuesta esperada:** `201 Created`
+
+```json
+{
+  "status": "success",
+  "message": "Datos de prueba generados correctamente",
+  "payload": {
+    "customers": 5,
+    "drivers": 3,
+    "orders": 5,
+    "deliveries": 5
+  }
+}
+```
+
+Los registros quedan almacenados en la base de datos configurada mediante `MONGODB_URI`.
+
+Este endpoint solamente permite generar datos cuando:
+
+```env
+NODE_ENV=development
+```
+
+Si el entorno no es de desarrollo, la operación se rechaza.
+
+## Validación de relaciones
+
+Durante las pruebas se verificó que los pedidos y las entregas generados mantuvieran referencias válidas.
+
+Resultados obtenidos:
+
+```text
+Pedidos con relaciones válidas: 5 / 5
+Entregas con relaciones válidas: 5 / 5
+```
+
+Esto confirma que, en la ejecución probada, los pedidos estaban relacionados correctamente con sus clientes y entregas, y las entregas con sus pedidos y repartidores.
+
+## Manejo de errores
+
+El módulo utiliza manejo de errores durante la generación de registros.
+
+Si ocurre un error, se intenta realizar una limpieza compensatoria de los documentos creados.
+
+Como la instalación local de MongoDB utilizada para las pruebas no cuenta con un replica set configurado, esta limpieza no constituye una transacción y no garantiza una reversión completa ante todos los posibles errores.
+
+## Estructura principal del proyecto
 
 ```text
 src/
@@ -159,23 +329,41 @@ src/
 │   └── index.js
 ├── controllers/
 │   ├── usersController.js
-│   └── productsController.js
+│   ├── productsController.js
+│   └── mocksController.js
 ├── models/
 │   ├── user.model.js
-│   └── product.model.js
+│   ├── product.model.js
+│   ├── order.model.js
+│   └── delivery.model.js
 ├── repositories/
 │   ├── user.repository.js
-│   └── product.repository.js
+│   ├── product.repository.js
+│   └── mocks.repository.js
 ├── routes/
 │   ├── users.js
-│   └── products.js
+│   ├── products.js
+│   └── mocks.router.js
 ├── services/
 │   ├── usersService.js
-│   └── productsService.js
+│   ├── productsService.js
+│   └── mocksService.js
 ├── utils/
+│   └── mockGenerator.js
 └── server.js
 ```
+
+## Consideraciones
+
+- Los endpoints de mocks permiten generar información ficticia para pruebas.
+- Los datos simulados respetan los modelos y las constantes del proyecto.
+- Las relaciones entre entidades se mantienen mediante referencias de MongoDB.
+- Las contraseñas almacenadas se protegen mediante hashes.
+- Se recomienda utilizar una base de datos independiente para las pruebas.
+- El archivo `.env` y la carpeta `node_modules` no deben subirse al repositorio.
 
 ## Autor
 
 Gastón Brecciaroli
+
+Programación Backend III - Coderhouse

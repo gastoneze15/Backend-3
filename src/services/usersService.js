@@ -31,7 +31,7 @@ class UsersService{
     }
 
     async update(id, user){
-        const updatedUser = userRepository.update(id, user)
+        const updatedUser = await userRepository.update(id, user);
         if(!updatedUser){
             throw new AppError("Usuario no encontrado", 404)
         }
@@ -40,14 +40,14 @@ class UsersService{
     }
 
     async delete(id){
-        const deletedUser = userRepository.delete(id)
+    const deletedUser = await userRepository.delete(id);
 
-        if(!deletedUser){
-            throw new AppError("Usuario no encontrado", 404)
-        }
-
-        return deletedUser
+    if(!deletedUser){
+        throw new AppError("Usuario no encontrado", 404);
     }
+
+    return deletedUser;
+}
 }
 
 export default new UsersService()
