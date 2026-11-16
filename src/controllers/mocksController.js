@@ -5,11 +5,13 @@ class MocksController {
 
     async getUsers(req, res, next) {
         try {
-            const users = mocksService.getUsers(10);
+            const quantity = req.query.quantity ?? 10;
+
+            const users = mocksService.getUsers(quantity);
 
             const safeUsers = users.map(({ password, ...user }) => user);
 
-            res.status(200).json({
+            return res.status(200).json({
                 status: 'success',
                 payload: safeUsers
             });
@@ -18,15 +20,15 @@ class MocksController {
         }
     }
 
-
-
     async getDrivers(req, res, next) {
         try {
-            const drivers = mocksService.getDrivers(10);
+            const quantity = req.query.quantity ?? 10;
+
+            const drivers = mocksService.getDrivers(quantity);
 
             const safeDrivers = drivers.map(({ password, ...driver }) => driver);
 
-            res.status(200).json({
+            return res.status(200).json({
                 status: 'success',
                 payload: safeDrivers
             });
@@ -38,9 +40,9 @@ class MocksController {
 
     async generateData(req, res, next) {
         try {
-            const result = await mocksService.generateData();
+            const result = await mocksService.generateData(req.body);
 
-            res.status(201).json({
+            return res.status(201).json({
                 status: 'success',
                 message: 'Datos de prueba generados correctamente',
                 payload: result
@@ -49,6 +51,7 @@ class MocksController {
             next(error);
         }
     }
+
 }
 
 export default new MocksController();

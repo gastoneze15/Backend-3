@@ -1,56 +1,49 @@
-import productsService from "../services/productsService.js";
+
+import productsService from '../services/productsService.js';
 
 class ProductsController {
-    async findAll(req, res) {
+
+    async findAll(req, res, next) {
         try {
-            const includeAll = req.query.all === "true";
+            const includeAll = req.query.all === 'true';
             const products = await productsService.findAll(includeAll);
 
             return res.status(200).json({
-                status: "success",
+                status: 'success',
                 payload: products
             });
-        } catch (e) {
-            return res.status(e.statusCode || 500).json({
-                status: "error",
-                message: e.message
-            });
+        } catch (error) {
+            next(error);
         }
     }
 
-    async findById(req, res) {
+    async findById(req, res, next) {
         try {
             const product = await productsService.findById(req.params.id);
 
             return res.status(200).json({
-                status: "success",
+                status: 'success',
                 payload: product
             });
-        } catch (e) {
-            return res.status(e.statusCode || 500).json({
-                status: "error",
-                message: e.message
-            });
+        } catch (error) {
+            next(error);
         }
     }
 
-    async create(req, res) {
+    async create(req, res, next) {
         try {
             const product = await productsService.create(req.body);
 
             return res.status(201).json({
-                status: "success",
+                status: 'success',
                 payload: product
             });
-        } catch (e) {
-            return res.status(e.statusCode || 500).json({
-                status: "error",
-                message: e.message
-            });
+        } catch (error) {
+            next(error);
         }
     }
 
-    async update(req, res) {
+    async update(req, res, next) {
         try {
             const product = await productsService.update(
                 req.params.id,
@@ -58,48 +51,39 @@ class ProductsController {
             );
 
             return res.status(200).json({
-                status: "success",
+                status: 'success',
                 payload: product
             });
-        } catch (e) {
-            return res.status(e.statusCode || 500).json({
-                status: "error",
-                message: e.message
-            });
+        } catch (error) {
+            next(error);
         }
     }
 
-    async delete(req, res) {
+    async delete(req, res, next) {
         try {
             await productsService.delete(req.params.id);
 
             return res.status(200).json({
-                status: "success",
-                message: "Producto eliminado"
+                status: 'success',
+                message: 'Producto eliminado'
             });
-        } catch (e) {
-            return res.status(e.statusCode || 500).json({
-                status: "error",
-                message: e.message
-            });
+        } catch (error) {
+            next(error);
         }
     }
 
-    async getShippingCost(req, res) {
+    async getShippingCost(req, res, next) {
         try {
             const shipping = await productsService.getShippingCost(
                 req.params.id
             );
 
             return res.status(200).json({
-                status: "success",
+                status: 'success',
                 payload: shipping
             });
-        } catch (e) {
-            return res.status(e.statusCode || 500).json({
-                status: "error",
-                message: e.message
-            });
+        } catch (error) {
+            next(error);
         }
     }
 }

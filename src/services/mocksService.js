@@ -1,58 +1,112 @@
+
 import bcrypt from 'bcryptjs';
-import mocksRepository from "../repositories/mocks.repository.js";
+
+import mocksRepository from '../repositories/mocks.repository.js';
+
 import {
     generateMockUsers,
     generateMockDrivers,
     generateMockOrder,
-    generateMockDelivery,
-} from "../utils/mockGenerator.js";
+    generateMockDelivery
+} from '../utils/mockGenerator.js';
+
+import CustomError from '../errors/CustomError.js';
+import { ERROR_CODES } from '../errors/errorDictionary.js';
 
 class MocksService {
+
+    validateQuantity(quantity) {
+        const value = Number(quantity);
+
+        if (
+            quantity === null ||
+            typeof quantity === 'boolean' ||
+            String(quantity).trim() === '' ||
+            !Number.isSafeInteger(value) ||
+            value <= 0 ||
+            value > 100
+        ) {
+            throw CustomError.create(
+                ERROR_CODES.INVALID_MOCK_QUANTITY,
+                'La cantidad debe ser un número entero entre 1 y 100'
+            );
+        }
+
+        return value;
+    }
+
     getUsers(quantity = 10) {
-        return generateMockUsers(quantity);
+        const validQuantity = this.validateQuantity(quantity);
+
+        return generateMockUsers(validQuantity);
     }
 
     getDrivers(quantity = 10) {
-        return generateMockDrivers(quantity);
+        const validQuantity = this.validateQuantity(quantity);
+
+        return generateMockDrivers(validQuantity);
     }
 
 
-    async generateData() {
-        let customers = [];
-        let drivers = [];
-        let orders = [];
-        let deliveries = [];
+    async generateData(data = {}) {
+        if (
+            data === null ||
+            typeof data !== 'object' ||
+            Array.isArray(data)
+        ) {
+            throw CustomError.create(ERROR_CODES.INVALID_DATA);
+        }
+
+        const customerQuantity = this.validateQuantity(
+            data.customers ?? 5
+        );
+
+
+        const driverQuantity = this.validateQuantity(
+            data.drivers ?? 3
+        );
+
+        // Registros creados durante la generación
+        const customers = [];
+        const drivers = [];
+        const orders = [];
+        const deliveries = [];
 
         try {
+
             const mockCustomers = await Promise.all(
-                generateMockUsers(5).map(async (user) => ({
+                generateMockUsers(customerQuantity).map(async (user) => ({
                     ...user,
                     password: await bcrypt.hash(user.password, 10)
                 }))
             );
 
             const mockDrivers = await Promise.all(
-                generateMockDrivers(3).map(async (driver) => ({
+                generateMockDrivers(driverQuantity).map(async (driver) => ({
                     ...driver,
                     password: await bcrypt.hash(driver.password, 10)
                 }))
             );
 
-            customers = await mocksRepository.createUsers(mockCustomers);
-            drivers = await mocksRepository.createUsers(mockDrivers);
+            await mocksRepository.createUsers(mockCustomers, customers);
+            await mocksRepository.createUsers(mockDrivers, drivers);
 
             const orderData = customers.map((customer) =>
                 generateMockOrder(customer._id)
             );
 
-            orders = await mocksRepository.createOrders(orderData);
+            await mocksRepository.createOrders(orderData, orders);
 
             const deliveryData = orders.map((order, index) => {
                 const driver = drivers[index % drivers.length];
+
                 return generateMockDelivery(order._id, driver._id);
             });
 
-            deliveries = await mocksRepository.createDeliveries(deliveryData);
+            await mocksRepository.createDeliveries(
+                deliveryData,
+                deliveries
+            );
 
             for (let index = 0; index < orders.length; index++) {
                 orders[index].delivery = deliveries[index]._id;
@@ -67,7 +121,6 @@ class MocksService {
             };
 
         } catch (error) {
-            // Intentamos limpiar los registros creados.
             const cleanupResults = await Promise.allSettled([
                 mocksRepository.deleteDeliveriesByIds(
                     deliveries.map((delivery) => delivery._id)
@@ -85,10 +138,11 @@ class MocksService {
                 console.error('No se pudo completar la limpieza de mocks');
             }
 
-            throw error;
+            console.error('Error durante la generación de mocks:', error);
+
+            throw CustomError.create(ERROR_CODES.DATABASE_ERROR);
         }
     }
-
 }
 
 export default new MocksService();

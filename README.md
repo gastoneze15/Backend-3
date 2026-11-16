@@ -1,21 +1,19 @@
 
 # ShipNow API
 
-Pre-entregas de los Módulos 1 y 2 de Programación Backend III.
+Pre-entregas de los Módulos 1, 2 y 3 de Programación Backend III.
 
-Este proyecto consiste en una API desarrollada con Node.js, Express y MongoDB para la gestión de usuarios, productos, pedidos y entregas.
+ShipNow API es una aplicación desarrollada con Node.js, Express y MongoDB para la gestión de usuarios, productos y la generación de datos de prueba relacionados con pedidos y entregas.
 
-En el Módulo 1 se trabajó en la refactorización de la API mediante una arquitectura por capas.
-
-En el Módulo 2 se incorporó un módulo de mocking para generar datos ficticios y almacenarlos en MongoDB, respetando los modelos y las relaciones entre entidades.
+El proyecto incorpora una arquitectura por capas, un módulo de mocking y un sistema centralizado de manejo de errores.
 
 ## Tecnologías utilizadas
 
 - Node.js
+- JavaScript (ES Modules)
 - Express
 - MongoDB
 - Mongoose
-- JavaScript (ES Modules)
 - dotenv
 - CORS
 - Nodemon
@@ -42,32 +40,34 @@ MongoDB
 
 ### Controller
 
-Los Controllers reciben las peticiones HTTP mediante `req`, llaman al Service correspondiente y devuelven las respuestas mediante `res`, utilizando los códigos HTTP apropiados.
+Los Controllers reciben las peticiones HTTP, llaman al Service correspondiente y devuelven las respuestas exitosas.
 
-Los Controllers no realizan consultas directas a MongoDB.
+No realizan consultas directas a MongoDB.
+
+Los errores se derivan al middleware global mediante `next(error)`.
 
 ### Service
 
-Los Services contienen la lógica de negocio de la aplicación.
+Los Services contienen la lógica de negocio.
 
-Entre sus responsabilidades se encuentran:
+Sus responsabilidades incluyen:
 
-- Validar usuarios existentes.
+- Validar usuarios y productos.
 - Evitar la creación de administradores desde el endpoint público.
-- Validar los datos de los productos.
-- Determinar el estado de un producto según su stock.
-- Filtrar productos disponibles.
+- Detectar registros inexistentes o duplicados.
+- Determinar el estado de productos según su stock.
 - Calcular costos de envío.
-- Generar datos simulados.
-- Coordinar la creación de registros relacionados.
+- Validar cantidades de mocks.
+- Generar y relacionar datos simulados.
+- Lanzar errores personalizados cuando corresponde.
 
 ### Repository
 
-Los Repositories se encargan del acceso a los datos.
+Los Repositories centralizan el acceso a MongoDB mediante Mongoose.
 
-Las operaciones de Mongoose, como `find`, `findById`, `findOne`, `create`, `findByIdAndUpdate` y `findByIdAndDelete`, se centralizan en esta capa.
+Contienen operaciones como `find`, `findById`, `findOne`, `create`, `findByIdAndUpdate` y `findByIdAndDelete`.
 
-Esta separación permite mantener la lógica de negocio independiente del acceso a MongoDB.
+Esta separación permite mantener desacoplada la lógica de negocio del acceso a los datos.
 
 ## Instalación
 
@@ -89,11 +89,11 @@ Instalar las dependencias:
 npm install
 ```
 
-Es necesario contar con Node.js y MongoDB instalados.
+Es necesario tener Node.js y MongoDB instalados.
 
 ## Variables de entorno
 
-La configuración se encuentra centralizada en:
+La configuración se centraliza en:
 
 ```text
 src/config/env.config.js
@@ -101,7 +101,7 @@ src/config/env.config.js
 
 Crear un archivo `.env` en la raíz del proyecto tomando como referencia `.env.example`.
 
-Ejemplo de configuración:
+Ejemplo para desarrollo:
 
 ```env
 PORT=8080
@@ -109,7 +109,7 @@ MONGODB_URI=mongodb://localhost:27017/shipnow
 NODE_ENV=development
 ```
 
-Para probar el módulo de mocks se recomienda utilizar una base de datos independiente:
+Para probar los mocks se recomienda utilizar una base de datos independiente:
 
 ```env
 PORT=8080
@@ -117,7 +117,7 @@ MONGODB_URI=mongodb://localhost:27017/shipnow_mocks
 NODE_ENV=development
 ```
 
-Esto permite realizar pruebas sin modificar los registros de la base de datos original.
+Esto permite realizar pruebas sin modificar los registros de la base original.
 
 El archivo `.env` no se incluye en el repositorio por seguridad.
 
@@ -125,7 +125,13 @@ El archivo `.env` no se incluye en el repositorio por seguridad.
 
 Asegurarse de que MongoDB esté ejecutándose.
 
-Iniciar el servidor con:
+Iniciar el servidor:
+
+```bash
+npm start
+```
+
+También puede utilizarse:
 
 ```bash
 node src/server.js
@@ -133,13 +139,15 @@ node src/server.js
 
 La API estará disponible en:
 
+```text
 http://localhost:8080
+```
 
 ## Módulo 1: Arquitectura por capas
 
-En la primera pre-entrega se reorganizó la API utilizando las capas Controller, Service y Repository.
+En el primer módulo se reorganizó ShipNow API utilizando las capas Controller, Service y Repository.
 
-Se implementaron operaciones relacionadas con usuarios y productos, validaciones y el uso de constantes para evitar valores escritos directamente en el código.
+Se implementaron operaciones de usuarios y productos, validaciones y constantes para evitar valores escritos directamente en el código.
 
 ### Endpoints principales
 
@@ -159,121 +167,98 @@ Se implementaron operaciones relacionadas con usuarios y productos, validaciones
 | DELETE | `/api/products/:id` | Eliminar producto |
 | GET | `/api/products/:id/shipping-cost` | Calcular el costo de envío |
 
+### Constantes
+
+Las constantes se encuentran centralizadas en:
+
+```text
+src/constants/index.js
+```
+
+Se utilizan para representar roles de usuario, estados de productos, estados de pedidos, estados de entregas y prioridades.
+
 ## Módulo 2: Generación de Mocks
 
-Se incorporó un módulo de mocking para generar datos ficticios de clientes, repartidores, pedidos y entregas.
+Se incorporó un módulo para generar datos ficticios de clientes, repartidores, pedidos y entregas.
 
-La implementación utiliza `@faker-js/faker` para crear información simulada y `bcryptjs` para almacenar las contraseñas de los usuarios generados mediante hashes.
+La implementación utiliza `@faker-js/faker` para generar información simulada y `bcryptjs` para almacenar las contraseñas mediante hashes.
 
-El módulo respeta la arquitectura por capas y utiliza los modelos reales del proyecto.
+El módulo respeta los modelos reales y la arquitectura por capas.
 
 ### Endpoints de mocks
 
 | Método | Ruta | Descripción |
 |---|---|---|
-| GET | `/api/mocks/users` | Generar 10 clientes ficticios sin guardarlos |
-| GET | `/api/mocks/drivers` | Generar 10 repartidores ficticios sin guardarlos |
-| POST | `/api/mocks/generate` | Insertar usuarios, pedidos y entregas en MongoDB |
+| GET | `/api/mocks/users` | Generar clientes ficticios sin guardarlos |
+| GET | `/api/mocks/drivers` | Generar repartidores ficticios sin guardarlos |
+| POST | `/api/mocks/generate` | Insertar datos relacionados en MongoDB |
 
-Los endpoints GET generan datos en memoria y no los almacenan en la base de datos.
-
-Las respuestas de estos endpoints no incluyen las contraseñas.
+Los endpoints GET generan datos en memoria y no incluyen contraseñas en sus respuestas.
 
 ### Generación de registros
 
-El endpoint `POST /api/mocks/generate` crea:
+Por defecto, `POST /api/mocks/generate` crea:
 
 - 5 clientes con rol `customer`.
 - 3 repartidores con rol `driver`.
 - 5 pedidos asociados a clientes.
 - 5 entregas asociadas a pedidos y repartidores.
 
-Los registros se almacenan en MongoDB.
+También permite indicar cantidades mediante un body JSON:
 
-Cada ejecución del endpoint genera un nuevo conjunto de datos.
+```json
+{
+  "customers": 2,
+  "drivers": 1
+}
+```
+
+En ese caso se generan dos clientes, un repartidor, dos pedidos y dos entregas.
+
+Cada ejecución crea un nuevo conjunto de registros.
 
 ### Relaciones entre entidades
 
-Los datos generados mantienen las siguientes relaciones:
+Los registros generados mantienen las siguientes relaciones:
 
 - Cada pedido referencia a un cliente existente.
 - Cada entrega referencia a un pedido existente.
 - Cada entrega tiene un repartidor asignado.
 - Cada pedido referencia a su entrega correspondiente.
 
-Las relaciones se implementan utilizando identificadores `ObjectId` de MongoDB.
+Las referencias utilizan identificadores `ObjectId` de MongoDB.
 
 ### Roles, estados y prioridades
 
-Los datos generados respetan las constantes definidas en:
+Los datos simulados utilizan las constantes definidas en `src/constants/index.js`.
 
-```text
-src/constants/index.js
+Esto permite mantener consistencia con los modelos de Mongoose.
+
+### Pruebas con Postman
+
+**1. Generar clientes**
+
+```http
+GET http://localhost:8080/api/mocks/users
 ```
 
-Se utilizan constantes para:
+Resultado esperado: `200 OK` con 10 clientes ficticios.
 
-- Roles de usuario.
-- Estados de pedidos.
-- Estados de entregas.
-- Prioridades de entregas.
+**2. Generar repartidores**
 
-Esto permite mantener consistencia con los modelos de Mongoose y evitar valores incorrectos.
-
-## Pruebas del módulo de mocks con Postman
-
-Para realizar las pruebas:
-
-1. Iniciar MongoDB.
-2. Configurar el archivo `.env` con `NODE_ENV=development`.
-3. Iniciar el servidor con `node src/server.js`.
-4. Abrir Postman y ejecutar las siguientes peticiones.
-
-### 1. Generar clientes simulados
-
-**Método:** GET
-
-**URL:**
-
-```text
-http://localhost:8080/api/mocks/users
+```http
+GET http://localhost:8080/api/mocks/drivers
 ```
 
-**Respuesta esperada:** `200 OK`
+Resultado esperado: `200 OK` con 10 repartidores ficticios.
 
-El endpoint devuelve 10 clientes ficticios con el rol `customer`.
+**3. Insertar datos en MongoDB**
 
-Los usuarios generados no se almacenan en MongoDB.
-
-### 2. Generar repartidores simulados
-
-**Método:** GET
-
-**URL:**
-
-```text
-http://localhost:8080/api/mocks/drivers
+```http
+POST http://localhost:8080/api/mocks/generate
 ```
 
-**Respuesta esperada:** `200 OK`
-
-El endpoint devuelve 10 repartidores ficticios con el rol `driver`.
-
-Los repartidores generados no se almacenan en MongoDB.
-
-### 3. Insertar datos de prueba en MongoDB
-
-**Método:** POST
-
-**URL:**
-
-```text
-http://localhost:8080/api/mocks/generate
-```
-
-No requiere enviar un body.
-
-**Respuesta esperada:** `201 Created`
+Sin body, la respuesta esperada es `201 Created`:
 
 ```json
 {
@@ -288,36 +273,265 @@ No requiere enviar un body.
 }
 ```
 
-Los registros quedan almacenados en la base de datos configurada mediante `MONGODB_URI`.
+**4. Generar cantidades personalizadas**
 
-Este endpoint solamente permite generar datos cuando:
-
-```env
-NODE_ENV=development
+```http
+POST http://localhost:8080/api/mocks/generate
 ```
 
-Si el entorno no es de desarrollo, la operación se rechaza.
+Body JSON:
 
-## Validación de relaciones
+```json
+{
+  "customers": 2,
+  "drivers": 1
+}
+```
 
-Durante las pruebas se verificó que los pedidos y las entregas generados mantuvieran referencias válidas.
+Resultado esperado: `201 Created`, con dos clientes, un repartidor, dos pedidos y dos entregas.
 
-Resultados obtenidos:
+### Validación de relaciones
+
+Durante las pruebas se verificó que las referencias entre pedidos, entregas y usuarios fueran válidas.
+
+Resultados obtenidos en una ejecución:
 
 ```text
 Pedidos con relaciones válidas: 5 / 5
 Entregas con relaciones válidas: 5 / 5
 ```
 
-Esto confirma que, en la ejecución probada, los pedidos estaban relacionados correctamente con sus clientes y entregas, y las entregas con sus pedidos y repartidores.
+### Limpieza ante errores
 
-## Manejo de errores
+Si ocurre una falla durante la generación, el sistema intenta eliminar los registros creados.
 
-El módulo utiliza manejo de errores durante la generación de registros.
+Como MongoDB local se utiliza sin replica set, esta limpieza compensatoria no equivale a una transacción y no garantiza una reversión completa ante todos los errores.
 
-Si ocurre un error, se intenta realizar una limpieza compensatoria de los documentos creados.
+## Módulo 3: Manejo profesional de errores
 
-Como la instalación local de MongoDB utilizada para las pruebas no cuenta con un replica set configurado, esta limpieza no constituye una transacción y no garantiza una reversión completa ante todos los posibles errores.
+Se implementó un sistema centralizado de manejo de errores para ShipNow API.
+
+El objetivo es evitar respuestas de error dispersas y devolver un formato HTTP consistente.
+
+### Componentes
+
+- `src/errors/CustomError.js`: define los errores personalizados.
+- `src/errors/errorDictionary.js`: contiene los códigos, mensajes y estados HTTP.
+- `src/middlewares/errorHandler.js`: transforma los errores en respuestas HTTP uniformes.
+
+Los Services detectan los errores del dominio y lanzan errores personalizados.
+
+Los Controllers derivan los errores mediante `next(error)`.
+
+El middleware global genera la respuesta final de error.
+
+### Estructura de respuesta
+
+Todos los errores utilizan el siguiente formato:
+
+```json
+{
+  "status": "error",
+  "code": "USER_NOT_FOUND",
+  "message": "Usuario no encontrado"
+}
+```
+
+Cuando corresponde, se incluye el campo opcional `details`:
+
+```json
+{
+  "status": "error",
+  "code": "INVALID_MOCK_QUANTITY",
+  "message": "La cantidad de mocks debe ser un número entero positivo",
+  "details": "La cantidad debe ser un número entero entre 1 y 100"
+}
+```
+
+### Diccionario de errores
+
+El diccionario incluye errores de usuarios, productos, pedidos, entregas, mocks y errores generales.
+
+Entre los códigos disponibles se encuentran:
+
+| Código | HTTP | Descripción |
+|---|---|---|
+| `USER_NOT_FOUND` | 404 | Usuario inexistente |
+| `PRODUCT_NOT_FOUND` | 404 | Producto inexistente |
+| `ORDER_NOT_FOUND` | 404 | Pedido inexistente |
+| `DELIVERY_NOT_FOUND` | 404 | Entrega inexistente |
+| `INVALID_ID` | 400 | Identificador inválido |
+| `INVALID_DATA` | 400 | Datos inválidos |
+| `INVALID_MOCK_QUANTITY` | 400 | Cantidad inválida de mocks |
+| `INVALID_PRODUCT_PRICE` | 400 | Precio de producto inválido |
+| `USER_ALREADY_EXISTS` | 409 | Usuario duplicado |
+| `PRODUCT_ALREADY_EXISTS` | 409 | Producto duplicado |
+| `DUPLICATE_RECORD` | 409 | Registro duplicado |
+| `MOCKS_NOT_ALLOWED` | 403 | Generación de mocks no permitida |
+| `DATABASE_ERROR` | 500 | Error de base de datos |
+| `ROUTE_NOT_FOUND` | 404 | Ruta inexistente |
+| `INTERNAL_ERROR` | 500 | Error interno |
+
+### Pruebas de errores con Postman
+
+Para realizar las pruebas:
+
+1. Iniciar MongoDB.
+2. Configurar `.env` con `NODE_ENV=development`.
+3. Ejecutar `npm start`.
+4. Abrir Postman.
+
+**1. Ruta inexistente**
+
+```http
+GET http://localhost:8080/api/ruta-inexistente
+```
+
+Resultado esperado:
+
+- HTTP `404 Not Found`.
+- Código `ROUTE_NOT_FOUND`.
+
+**2. Usuario inexistente**
+
+```http
+GET http://localhost:8080/api/users/507f1f77bcf86cd799439011
+```
+
+Resultado esperado:
+
+- HTTP `404 Not Found`.
+- Código `USER_NOT_FOUND`.
+
+**3. Identificador inválido**
+
+```http
+GET http://localhost:8080/api/users/123
+```
+
+Resultado esperado:
+
+- HTTP `400 Bad Request`.
+- Código `INVALID_ID`.
+
+**4. Producto inexistente**
+
+```http
+GET http://localhost:8080/api/products/507f1f77bcf86cd799439011
+```
+
+Resultado esperado:
+
+- HTTP `404 Not Found`.
+- Código `PRODUCT_NOT_FOUND`.
+
+**5. Precio negativo**
+
+```http
+POST http://localhost:8080/api/products
+```
+
+Body JSON:
+
+```json
+{
+  "title": "Producto de prueba",
+  "code": "TEST-ERROR-003",
+  "price": -100,
+  "stock": 5
+}
+```
+
+Resultado esperado:
+
+- HTTP `400 Bad Request`.
+- Código `INVALID_PRODUCT_PRICE`.
+
+**6. Cantidad negativa de mocks**
+
+```http
+GET http://localhost:8080/api/mocks/users?quantity=-5
+```
+
+Resultado esperado:
+
+- HTTP `400 Bad Request`.
+- Código `INVALID_MOCK_QUANTITY`.
+
+**7. Cantidad no numérica de mocks**
+
+```http
+GET http://localhost:8080/api/mocks/drivers?quantity=abc
+```
+
+Resultado esperado:
+
+- HTTP `400 Bad Request`.
+- Código `INVALID_MOCK_QUANTITY`.
+
+**8. Cantidad inválida al insertar mocks**
+
+```http
+POST http://localhost:8080/api/mocks/generate
+```
+
+Body JSON:
+
+```json
+{
+  "customers": -5,
+  "drivers": 3
+}
+```
+
+Resultado esperado:
+
+- HTTP `400 Bad Request`.
+- Código `INVALID_MOCK_QUANTITY`.
+
+**9. Generación válida de mocks**
+
+```http
+POST http://localhost:8080/api/mocks/generate
+```
+
+Body JSON:
+
+```json
+{
+  "customers": 2,
+  "drivers": 1
+}
+```
+
+Resultado esperado:
+
+- HTTP `201 Created`.
+- Dos clientes.
+- Un repartidor.
+- Dos pedidos.
+- Dos entregas.
+
+### Errores de MongoDB
+
+El middleware global contempla:
+
+- Errores de validación de Mongoose: `400 Bad Request`.
+- Identificadores inválidos: `400 Bad Request`.
+- Registros duplicados: `409 Conflict`.
+- Errores inesperados: `500 Internal Server Error`.
+
+Los errores inesperados se registran en la consola del servidor sin exponer detalles internos al cliente.
+
+### Seguridad
+
+La inserción de mocks solo está habilitada cuando:
+
+```env
+NODE_ENV=development
+```
+
+En otros entornos, la generación de registros de prueba se rechaza.
 
 ## Estructura principal del proyecto
 
@@ -331,6 +545,11 @@ src/
 │   ├── usersController.js
 │   ├── productsController.js
 │   └── mocksController.js
+├── errors/
+│   ├── CustomError.js
+│   └── errorDictionary.js
+├── middlewares/
+│   └── errorHandler.js
 ├── models/
 │   ├── user.model.js
 │   ├── product.model.js
@@ -355,12 +574,13 @@ src/
 
 ## Consideraciones
 
-- Los endpoints de mocks permiten generar información ficticia para pruebas.
-- Los datos simulados respetan los modelos y las constantes del proyecto.
-- Las relaciones entre entidades se mantienen mediante referencias de MongoDB.
+- Los mocks permiten generar información ficticia para pruebas.
+- Los datos respetan los modelos y las constantes del proyecto.
+- Las relaciones se mantienen mediante referencias de MongoDB.
 - Las contraseñas almacenadas se protegen mediante hashes.
 - Se recomienda utilizar una base de datos independiente para las pruebas.
 - El archivo `.env` y la carpeta `node_modules` no deben subirse al repositorio.
+- El manejo de errores se encuentra centralizado mediante un middleware global.
 
 ## Autor
 
