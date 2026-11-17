@@ -2,7 +2,7 @@
 import bcrypt from 'bcryptjs';
 
 import mocksRepository from '../repositories/mocks.repository.js';
-
+import logger from '../config/logger.config.js';
 import {
     generateMockUsers,
     generateMockDrivers,
@@ -18,6 +18,7 @@ class MocksService {
     validateQuantity(quantity) {
         const value = Number(quantity);
 
+
         if (
             quantity === null ||
             typeof quantity === 'boolean' ||
@@ -26,11 +27,16 @@ class MocksService {
             value <= 0 ||
             value > 100
         ) {
+            logger.warning(
+                `Cantidad inválida de mocks recibida: ${String(quantity)}`
+            );
+
             throw CustomError.create(
                 ERROR_CODES.INVALID_MOCK_QUANTITY,
                 'La cantidad debe ser un número entero entre 1 y 100'
             );
         }
+
 
         return value;
     }
@@ -113,12 +119,21 @@ class MocksService {
                 await orders[index].save();
             }
 
-            return {
+            const result = {
                 customers: customers.length,
                 drivers: drivers.length,
                 orders: orders.length,
                 deliveries: deliveries.length
             };
+
+            logger.info(
+                `Mocks generados correctamente: ${result.customers} clientes, ` +
+                `${result.drivers} repartidores, ${result.orders} pedidos y ` +
+                `${result.deliveries} entregas`
+            );
+
+            return result;
+
 
         } catch (error) {
             const cleanupResults = await Promise.allSettled([
@@ -135,10 +150,13 @@ class MocksService {
             ]);
 
             if (cleanupResults.some((result) => result.status === 'rejected')) {
-                console.error('No se pudo completar la limpieza de mocks');
+                logger.error('No se pudo completar la limpieza de mocks');
             }
 
-            console.error('Error durante la generación de mocks:', error);
+
+            logger.error(`Error durante la generación de mocks: ${error.message}`, {
+                stack: error.stack
+            });
 
             throw CustomError.create(ERROR_CODES.DATABASE_ERROR);
         }

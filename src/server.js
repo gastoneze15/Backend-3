@@ -2,11 +2,11 @@
 import express from 'express';
 import cors from 'cors';
 import mongoose from 'mongoose';
-
+import logger from './config/logger.config.js';
 import usersRouter from './routes/users.js';
 import productsRouter from './routes/products.js';
 import mocksRouter from './routes/mocks.router.js';
-
+import loggerRouter from './routes/logger.router.js';
 import { config } from './config/env.config.js';
 
 import CustomError from './errors/CustomError.js';
@@ -22,6 +22,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use('/api/users', usersRouter);
 app.use('/api/products', productsRouter);
 app.use('/api/mocks', mocksRouter);
+app.use('/api/logger', loggerRouter);
 
 app.get('/api/health', (req, res) => {
     res.json({
@@ -36,13 +37,16 @@ app.use((req, res, next) => {
 
 app.use(errorHandler);
 
+
 mongoose.connect(config.mongoUri)
     .then(() => {
+        logger.info('Conexión a MongoDB establecida correctamente');
+
         app.listen(config.port, () => {
-            console.log(`Servidor corriendo en puerto ${config.port}`);
+            logger.info(`Servidor ShipNow escuchando en el puerto ${config.port}`);
         });
     })
     .catch((error) => {
-        console.error('Error de conexión a MongoDB:', error);
-        process.exitCode = 1;
+        logger.fatal(`Error crítico al conectar con MongoDB: ${error.message}`);
+        process.exit(1);
     });
