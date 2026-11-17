@@ -1,0 +1,217 @@
+
+paths:
+  /api/users:
+    get:
+      tags:
+        - Users
+      summary: Obtener todos los usuarios
+      description: Devuelve la lista de usuarios registrados.
+      responses:
+        '200':
+          description: Usuarios obtenidos correctamente.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: success
+                  payload:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/User'
+        '500':
+          description: Error interno del servidor.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    post:
+      tags:
+        - Users
+      summary: Crear un usuario
+      description: Registra un usuario nuevo. No permite crear administradores directamente.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateUser'
+      responses:
+        '201':
+          description: Usuario creado correctamente.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessResponse'
+                  - type: object
+                    properties:
+                      payload:
+                        $ref: '#/components/schemas/User'
+        '400':
+          description: Datos inválidos o intento de crear un administrador.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                datosInvalidos:
+                  summary: Datos de usuario inválidos
+                  value:
+                    status: error
+                    code: INVALID_USER_DATA
+                    message: Los datos del usuario no son válidos
+                administradorProhibido:
+                  summary: Creación de administrador no permitida
+                  value:
+                    status: error
+                    code: ADMIN_CREATION_FORBIDDEN
+                    message: No es posible crear administradores desde este endpoint
+        '409':
+          description: El usuario ya existe, si así está configurado el diccionario de errores.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Error interno del servidor.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/users/{id}:
+    parameters:
+      - in: path
+        name: id
+        required: true
+        description: Identificador de MongoDB del usuario.
+        schema:
+          type: string
+        example: "507f1f77bcf86cd799439011"
+
+    get:
+      tags:
+        - Users
+      summary: Obtener un usuario por ID
+      responses:
+        '200':
+          description: Usuario encontrado.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessResponse'
+                  - type: object
+                    properties:
+                      payload:
+                        $ref: '#/components/schemas/User'
+        '400':
+          description: Identificador inválido.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Usuario no encontrado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Error interno.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    put:
+      tags:
+        - Users
+      summary: Actualizar un usuario
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              description: Campos del usuario que se desean actualizar.
+              properties:
+                firstName:
+                  type: string
+                lastName:
+                  type: string
+                email:
+                  type: string
+                password:
+                  type: string
+                role:
+                  type: string
+      responses:
+        '200':
+          description: Usuario actualizado correctamente.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessResponse'
+                  - type: object
+                    properties:
+                      payload:
+                        $ref: '#/components/schemas/User'
+        '400':
+          description: Identificador o datos inválidos.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Usuario no encontrado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Error interno.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    delete:
+      tags:
+        - Users
+      summary: Eliminar un usuario
+      responses:
+        '200':
+          description: Usuario eliminado correctamente.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessResponse'
+                  - type: object
+                    properties:
+                      payload:
+                        $ref: '#/components/schemas/User'
+        '400':
+          description: Identificador inválido.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Usuario no encontrado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Error interno.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'

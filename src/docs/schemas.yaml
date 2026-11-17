@@ -1,0 +1,274 @@
+
+components:
+  schemas:
+    User:
+      type: object
+      description: Usuario registrado en ShipNow.
+      properties:
+        _id:
+          type: string
+          description: Identificador de MongoDB.
+          example: "507f1f77bcf86cd799439011"
+        firstName:
+          type: string
+          example: "Juan"
+        lastName:
+          type: string
+          example: "Pérez"
+        email:
+          type: string
+          format: email
+          example: "juan@example.com"
+        password:
+          type: string
+          writeOnly: true
+          description: Contraseña requerida para crear el usuario.
+        role:
+          type: string
+          description: Rol del usuario.
+          example: "customer"
+        documents:
+          type: array
+          items:
+            type: object
+            properties:
+              name:
+                type: string
+              reference:
+                type: string
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    CreateUser:
+      type: object
+      required:
+        - firstName
+        - lastName
+        - email
+        - password
+      properties:
+        firstName:
+          type: string
+          example: "Juan"
+        lastName:
+          type: string
+          example: "Pérez"
+        email:
+          type: string
+          format: email
+          example: "juan@example.com"
+        password:
+          type: string
+          format: password
+          example: "ClaveSegura123"
+        role:
+          type: string
+          description: No se permite crear administradores directamente.
+          example: "customer"
+
+    SuccessResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          example: "success"
+        payload:
+          description: Datos devueltos por el endpoint.
+
+    ErrorResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          example: "error"
+        code:
+          type: string
+          example: "USER_NOT_FOUND"
+        message:
+          type: string
+          example: "Usuario no encontrado"
+        details:
+          description: Información adicional del error, cuando corresponda.
+
+    OrderItem:
+      type: object
+      description: Producto incluido en un pedido.
+      properties:
+        name:
+          type: string
+          example: "Remera personalizada"
+        quantity:
+          type: integer
+          minimum: 1
+          example: 2
+        price:
+          type: number
+          minimum: 0
+          example: 15000
+
+    Order:
+      type: object
+      description: Pedido registrado en ShipNow.
+      properties:
+        _id:
+          type: string
+          example: "507f1f77bcf86cd799439011"
+        customer:
+          type: object
+          description: Datos básicos del cliente asociado.
+          properties:
+            _id:
+              type: string
+            firstName:
+              type: string
+            lastName:
+              type: string
+            email:
+              type: string
+              format: email
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/OrderItem'
+        deliveryAddress:
+          type: string
+          example: "Av. Corrientes 1234, CABA"
+        total:
+          type: number
+          example: 30000
+        shippingCost:
+          type: number
+          example: 2500
+        declaredValue:
+          type: number
+          example: 30000
+        status:
+          type: string
+          enum:
+            - created
+            - assigned
+            - picked_up
+            - in_transit
+            - delivered
+            - cancelled
+          example: "created"
+        priority:
+          type: string
+          enum:
+            - low
+            - normal
+            - high
+          example: "normal"
+        delivery:
+          type: object
+          nullable: true
+          description: Entrega asociada al pedido, cuando existe.
+          properties:
+            _id:
+              type: string
+            order:
+              type: string
+            driver:
+              type: string
+              nullable: true
+            status:
+              type: string
+            priority:
+              type: string
+            assignedAt:
+              type: string
+              format: date-time
+              nullable: true
+            deliveredAt:
+              type: string
+              format: date-time
+              nullable: true
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    Delivery:
+      type: object
+      description: Entrega registrada en ShipNow.
+      properties:
+        _id:
+          type: string
+          example: "507f191e810c19729de860ea"
+        order:
+          type: object
+          description: Pedido asociado a la entrega.
+          properties:
+            _id:
+              type: string
+            customer:
+              type: string
+              description: ID del cliente.
+            items:
+              type: array
+              items:
+                $ref: '#/components/schemas/OrderItem'
+            deliveryAddress:
+              type: string
+            total:
+              type: number
+            shippingCost:
+              type: number
+            declaredValue:
+              type: number
+            status:
+              type: string
+            priority:
+              type: string
+            delivery:
+              type: string
+              nullable: true
+        driver:
+          type: object
+          nullable: true
+          description: Repartidor asignado, si existe.
+          properties:
+            _id:
+              type: string
+            firstName:
+              type: string
+            lastName:
+              type: string
+            email:
+              type: string
+              format: email
+        status:
+          type: string
+          enum:
+            - pending
+            - assigned
+            - in_transit
+            - delivered
+          example: "assigned"
+        priority:
+          type: string
+          enum:
+            - low
+            - normal
+            - high
+          example: "normal"
+        assignedAt:
+          type: string
+          format: date-time
+          nullable: true
+        deliveredAt:
+          type: string
+          format: date-time
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time

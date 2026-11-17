@@ -1,0 +1,218 @@
+
+paths:
+  /api/mocks/users:
+    get:
+      tags:
+        - Mocks
+      summary: Generar usuarios ficticios
+      description: >
+        Genera clientes ficticios sin guardarlos en MongoDB.
+        Las contraseñas no se incluyen en la respuesta.
+      parameters:
+        - in: query
+          name: quantity
+          required: false
+          description: Cantidad de usuarios a generar, entre 1 y 100.
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 10
+          example: 5
+      responses:
+        '200':
+          description: Usuarios ficticios generados correctamente.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: success
+                  payload:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/User'
+        '400':
+          description: Cantidad de mocks inválida.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                status: error
+                code: INVALID_MOCK_QUANTITY
+                message: La cantidad de mocks debe ser un número entero positivo
+                details: La cantidad debe ser un número entero entre 1 y 100
+        '500':
+          description: Error interno del servidor.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/mocks/drivers:
+    get:
+      tags:
+        - Mocks
+      summary: Generar repartidores ficticios
+      description: >
+        Genera repartidores ficticios sin guardarlos en MongoDB.
+        Las contraseñas no se incluyen en la respuesta.
+      parameters:
+        - in: query
+          name: quantity
+          required: false
+          description: Cantidad de repartidores a generar, entre 1 y 100.
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 10
+          example: 3
+      responses:
+        '200':
+          description: Repartidores ficticios generados correctamente.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: success
+                  payload:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/User'
+        '400':
+          description: Cantidad de mocks inválida.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                status: error
+                code: INVALID_MOCK_QUANTITY
+                message: La cantidad de mocks debe ser un número entero positivo
+                details: La cantidad debe ser un número entero entre 1 y 100
+        '500':
+          description: Error interno del servidor.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/mocks/generate:
+    post:
+      tags:
+        - Mocks
+      summary: Insertar datos de prueba en MongoDB
+      description: >
+        Genera y guarda clientes, repartidores, pedidos y entregas
+        relacionados entre sí. Solo está disponible cuando
+        NODE_ENV es development.
+      requestBody:
+        required: false
+        description: >
+          Cantidades de clientes y repartidores a generar.
+          Si se omiten, se utilizan los valores predeterminados.
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                customers:
+                  type: integer
+                  minimum: 1
+                  maximum: 100
+                  default: 5
+                  example: 5
+                drivers:
+                  type: integer
+                  minimum: 1
+                  maximum: 100
+                  default: 3
+                  example: 3
+            example:
+              customers: 5
+              drivers: 3
+      responses:
+        '201':
+          description: Datos de prueba insertados correctamente.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: success
+                  message:
+                    type: string
+                    example: Datos de prueba generados correctamente
+                  payload:
+                    type: object
+                    properties:
+                      customers:
+                        type: integer
+                        example: 5
+                      drivers:
+                        type: integer
+                        example: 3
+                      orders:
+                        type: integer
+                        example: 5
+                      deliveries:
+                        type: integer
+                        example: 5
+        '400':
+          description: Body inválido o cantidad de mocks fuera del rango permitido.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                cantidadInvalida:
+                  summary: Cantidad inválida
+                  value:
+                    status: error
+                    code: INVALID_MOCK_QUANTITY
+                    message: La cantidad de mocks debe ser un número entero positivo
+                    details: La cantidad debe ser un número entero entre 1 y 100
+                datosInvalidos:
+                  summary: Body inválido
+                  value:
+                    status: error
+                    code: INVALID_DATA
+                    message: Los datos proporcionados no son válidos
+        '403':
+          description: Generación de mocks no permitida fuera del entorno de desarrollo.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                status: error
+                code: MOCKS_NOT_ALLOWED
+                message: La generación de datos solo está disponible en desarrollo
+        '500':
+          description: Error durante la inserción o error interno del servidor.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                databaseError:
+                  summary: Error de base de datos
+                  value:
+                    status: error
+                    code: DATABASE_ERROR
+                    message: Error al realizar una operación en la base de datos
+                internalError:
+                  summary: Error interno
+                  value:
+                    status: error
+                    code: INTERNAL_ERROR
+                    message: Error interno del servidor
