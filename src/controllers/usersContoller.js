@@ -70,6 +70,27 @@ class UsersController {
             next(error);
         }
     }
+
+    // Cargar documentos del usuario - Modulo 7
+    async uploadDocument(req, res, next) {
+        try {
+
+            const updatedUser = await usersService.uploadDocument(
+                req.params.id,
+                req.file,
+                req.body.documentType
+            );
+
+            return res.status(201).json({
+                status: 'success',
+                message: 'Documento cargado correctamente',
+                payload: updatedUser
+            });
+
+        } catch (error) {
+            next(error);
+        }
+    }
 }
 
 export default new UsersController();

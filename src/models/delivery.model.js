@@ -5,35 +5,49 @@ import {
     DELIVERY_PRIORITY
 } from '../constants/index.js';
 
+import fileMetadataSchema from './fileMetadata.schema.js';
+
 const deliverySchema = new mongoose.Schema({
     order: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Order',
         required: [true, 'El pedido es obligatorio']
     },
+
     driver: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User',
         default: null
     },
+
     status: {
         type: String,
         enum: Object.values(DELIVERY_STATUS),
         default: DELIVERY_STATUS.PENDING
     },
+
     priority: {
         type: String,
         enum: Object.values(DELIVERY_PRIORITY),
         default: DELIVERY_PRIORITY.NORMAL
     },
+
     assignedAt: {
         type: Date,
         default: null
     },
+
     deliveredAt: {
         type: Date,
         default: null
+    },
+
+    // Comprobante de entrega - Modulo 7
+    proof: {
+        type: fileMetadataSchema,
+        default: null
     }
+
 }, {
     timestamps: true
 });

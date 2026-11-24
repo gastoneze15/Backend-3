@@ -17,6 +17,28 @@ class DeliveryRepository {
             .lean();
     }
 
+    // Asociar comprobante de entrega - Modulo 7
+    async addProof(id, proofMetadata) {
+
+        return await Delivery.findOneAndUpdate(
+            {
+                _id: id,
+                proof: null
+            },
+            {
+                $set: {
+                    proof: proofMetadata
+                }
+            },
+            {
+                new: true,
+                runValidators: true
+            }
+        )
+            .populate('order')
+            .populate('driver', 'firstName lastName email')
+            .lean();
+    }
 }
 
 export default new DeliveryRepository();

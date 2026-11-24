@@ -1,44 +1,62 @@
+
 import mongoose from 'mongoose';
-import { USER_ROLES } from "../constants/index.js";
+import { USER_ROLES } from '../constants/index.js';
+import fileMetadataSchema from './fileMetadata.schema.js';
 
 const userSchema = new mongoose.Schema({
-  firstName: {
-    type: String,
-    required: [true, 'El nombre es obligatorio'],
-    trim: true
-  },
-  lastName: {
-    type: String,
-    required: [true, 'El apellido es obligatorio'],
-    trim: true
-  },
-  email: {
-    type: String,
-    required: [true, 'El email es obligatorio'],
-    unique: true,
-    trim: true,
-    lowercase: true
-  },
-  password: {
-    type: String,
-    required: [true, 'La contraseña es obligatoria']
-  },
-  role: {
-    type: String,
-    enum: Object.values(USER_ROLES),
-    default: USER_ROLES.CUSTOMER
-},
-  documents: {
-    type: [
-      {
-        name: { type: String },
-        reference: { type: String }
-      }
-    ],
-    default: []
-  }
+    firstName: {
+        type: String,
+        required: [true, 'El nombre es obligatorio'],
+        trim: true
+    },
+
+    lastName: {
+        type: String,
+        required: [true, 'El apellido es obligatorio'],
+        trim: true
+    },
+
+    email: {
+        type: String,
+        required: [true, 'El email es obligatorio'],
+        unique: true,
+        trim: true,
+        lowercase: true
+    },
+
+    password: {
+        type: String,
+        required: [true, 'La contraseña es obligatoria'],
+        select: false
+    },
+
+    role: {
+        type: String,
+        enum: Object.values(USER_ROLES),
+        default: USER_ROLES.CUSTOMER
+    },
+
+    documents: {
+        type: [fileMetadataSchema],
+        default: []
+    }
+
 }, {
-  timestamps: true
+    timestamps: true,
+
+    toJSON: {
+        transform: (doc, ret) => {
+            delete ret.password;
+            return ret;
+        }
+    },
+
+    toObject: {
+        transform: (doc, ret) => {
+            delete ret.password;
+            return ret;
+        }
+    }
 });
 
 const User = mongoose.model('User', userSchema);

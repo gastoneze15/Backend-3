@@ -81,3 +81,187 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
+
+  /api/deliveries/{id}/proof:
+    post:
+      tags:
+        - Deliveries
+      summary: Cargar un comprobante de entrega
+      description: |
+        Permite cargar un archivo como comprobante y asociarlo
+        a una entrega existente mediante Multer.
+
+        Formatos aceptados:
+        - PDF
+        - JPG
+        - JPEG
+        - PNG
+
+        Tamaño máximo permitido: 5 MiB (5242880 bytes).
+
+        El tipo de documento delivery_proof se asigna automáticamente.
+        No es necesario enviarlo en el cuerpo de la solicitud.
+
+        El archivo se almacena físicamente en uploads/delivery-proofs.
+        MongoDB almacena únicamente los metadatos del comprobante.
+
+        Cada entrega admite un único comprobante.
+        Si ya existe uno asociado, se devuelve un error 409.
+
+        Las operaciones exitosas y los errores se registran mediante Winston.
+
+      parameters:
+        - in: path
+          name: id
+          required: true
+          description: Identificador de MongoDB de la entrega.
+          schema:
+            type: string
+          example: "507f191e810c19729de860ea"
+
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/UploadDeliveryProof'
+            encoding:
+              file:
+                contentType: 'application/pdf, image/jpeg, image/png'
+
+      responses:
+        '201':
+          description: Comprobante cargado y asociado correctamente.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessResponse'
+                  - type: object
+                    properties:
+                      message:
+                        type: string
+                        example: Comprobante de entrega cargado correctamente
+                      payload:
+                        $ref: '#/components/schemas/Delivery'
+              example:
+                status: success
+                message: Comprobante de entrega cargado correctamente
+                payload:
+                  _id: "507f191e810c19729de860ea"
+                  order:
+                    _id: "507f1f77bcf86cd799439011"
+                    deliveryAddress: "Av. Corrientes 1234, CABA"
+                    total: 30000
+                  driver:
+                    _id: "507f1f77bcf86cd799439013"
+                    firstName: Juan
+                    lastName: Pérez
+                    email: juan@example.com
+                  status: assigned
+                  priority: normal
+                  proof:
+                    _id: "507f1f77bcf86cd799439014"
+                    originalName: comprobante.png
+                    fileName: "08b5eb3f-22c9-4423-98b9-755a24d1b538.png"
+                    path: "delivery-proofs/08b5eb3f-22c9-4423-98b9-755a24d1b538.png"
+                    mimeType: image/png
+                    size: 47001
+                    documentType: delivery_proof
+                    uploadedAt: "2026-11-24T12:15:41.648Z"
+
+        '400':
+          description: Solicitud inválida o datos de carga incorrectos.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                archivoFaltante:
+                  summary: No se adjuntó ningún archivo
+                  value:
+                    status: error
+                    code: FILE_REQUIRED
+                    message: Es obligatorio adjuntar un archivo
+                campoIncorrecto:
+                  summary: Nombre de campo de archivo incorrecto
+                  value:
+                    status: error
+                    code: INVALID_FILE_FIELD
+                    message: El campo utilizado para cargar el archivo no es válido
+                multipartInvalido:
+                  summary: Datos multipart incorrectos
+                  value:
+                    status: error
+                    code: INVALID_MULTIPART_DATA
+                    message: Los datos de carga multipart/form-data no son válidos
+                identificadorInvalido:
+                  summary: Identificador de entrega inválido
+                  value:
+                    status: error
+                    code: INVALID_ID
+                    message: El identificador proporcionado no es válido
+
+        '404':
+          description: La entrega indicada no existe.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                status: error
+                code: DELIVERY_NOT_FOUND
+                message: Entrega no encontrada
+
+        '409':
+          description: La entrega ya tiene un comprobante asociado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                status: error
+                code: PROOF_ALREADY_EXISTS
+                message: La entrega ya tiene un comprobante asociado
+
+        '413':
+          description: El archivo supera el límite de 5 MiB.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                status: error
+                code: FILE_TOO_LARGE
+                message: El archivo supera el tamaño máximo permitido
+
+        '415':
+          description: El formato del archivo no está permitido.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                status: error
+                code: INVALID_FILE_TYPE
+                message: El tipo de archivo no está permitido
+
+        '500':
+          description: Error durante el almacenamiento o procesamiento del comprobante.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                errorAlmacenamiento:
+                  summary: Error al guardar el archivo
+                  value:
+                    status: error
+                    code: FILE_UPLOAD_ERROR
+                    message: Ocurrió un error al guardar el archivo
+                errorInterno:
+                  summary: Error interno del servidor
+                  value:
+                    status: error
+                    code: INTERNAL_ERROR
+                    message: Error interno del servidor

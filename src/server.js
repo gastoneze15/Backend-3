@@ -1,9 +1,9 @@
 
-import mongoose from 'mongoose';
-
-import app from './app.js';
-import logger from './config/logger.config.js';
 import { config } from './config/env.config.js';
+
+import mongoose from 'mongoose';
+import logger from './config/logger.config.js';
+import app from './app.js';
 
 mongoose.connect(config.mongoUri)
     .then(() => {

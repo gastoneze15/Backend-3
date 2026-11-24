@@ -291,4 +291,187 @@ describe('ShipNow API - Users', function () {
 
     });
 
+    describe('Seguridad de usuarios', function () {
+
+        let userId;
+
+        const createUser = async function () {
+
+            const response = await request(app)
+                .post('/api/users')
+                .send({
+                    firstName: 'Usuario',
+                    lastName: 'Security Test',
+                    email: `security-${Date.now()}-${Math.random()}@shipnow.com`,
+                    password: 'Test123456',
+                    role: 'customer'
+                });
+
+            expect(response.status).to.equal(201);
+
+            return response.body.payload;
+        };
+
+        beforeEach(async function () {
+
+            const user = await createUser();
+
+            userId = user._id;
+
+        });
+
+        it('No debe exponer la contraseña al crear un usuario', async function () {
+
+            const user = await createUser();
+
+            expect(user)
+                .not.to.have.property('password');
+
+        });
+
+        it('No debe exponer contraseñas en la lista de usuarios', async function () {
+
+            const response = await request(app)
+                .get('/api/users');
+
+            expect(response.status).to.equal(200);
+
+            expect(response.body.payload)
+                .to.be.an('array')
+                .that.is.not.empty;
+
+            for (const user of response.body.payload) {
+
+                expect(user)
+                    .not.to.have.property('password');
+
+            }
+
+        });
+
+        it('No debe exponer la contraseña al consultar un usuario por ID', async function () {
+
+            const response = await request(app)
+                .get(`/api/users/${userId}`);
+
+            expect(response.status).to.equal(200);
+
+            expect(response.body.payload)
+                .not.to.have.property('password');
+
+        });
+
+        it('No debe exponer la contraseña al actualizar un usuario', async function () {
+
+            const response = await request(app)
+                .put(`/api/users/${userId}`)
+                .send({
+                    lastName: 'Actualizado'
+                });
+
+            expect(response.status).to.equal(200);
+
+            expect(response.body.payload)
+                .not.to.have.property('password');
+
+        });
+
+        it('Debe impedir la modificación directa de documentos', async function () {
+
+            const originalResponse = await request(app)
+                .get(`/api/users/${userId}`);
+
+            expect(originalResponse.status).to.equal(200);
+
+            const originalDocuments =
+                originalResponse.body.payload.documents;
+
+            const response = await request(app)
+                .put(`/api/users/${userId}`)
+                .send({
+                    documents: []
+                });
+
+            expect(response.status).to.equal(400);
+
+            expect(response.body.code)
+                .to.equal('INVALID_USER_DATA');
+
+            const getResponse = await request(app)
+                .get(`/api/users/${userId}`);
+
+            expect(getResponse.status).to.equal(200);
+
+            expect(getResponse.body.payload.documents)
+                .to.deep.equal(originalDocuments);
+
+        });
+
+        it('Debe impedir la creación de administradores', async function () {
+
+            const response = await request(app)
+                .post('/api/users')
+                .send({
+                    firstName: 'Admin',
+                    lastName: 'Testing',
+                    email: 'admin-security@shipnow.com',
+                    password: 'Test123456',
+                    role: 'admin'
+                });
+
+            expect(response.status).to.equal(400);
+
+            expect(response.body.code)
+                .to.equal('ADMIN_CREATION_FORBIDDEN');
+
+        });
+
+        it('Debe impedir la asignación del rol administrador mediante PUT', async function () {
+
+            const response = await request(app)
+                .put(`/api/users/${userId}`)
+                .send({
+                    role: 'admin'
+                });
+
+            expect(response.status).to.equal(400);
+
+            expect(response.body.code)
+                .to.equal('ADMIN_CREATION_FORBIDDEN');
+
+            const getResponse = await request(app)
+                .get(`/api/users/${userId}`);
+
+            expect(getResponse.status).to.equal(200);
+
+            expect(getResponse.body.payload.role)
+                .to.equal('customer');
+
+        });
+
+        it('Debe rechazar un rol de usuario inválido', async function () {
+
+            const response = await request(app)
+                .put(`/api/users/${userId}`)
+                .send({
+                    role: 'rol_invalido'
+                });
+
+            expect(response.status).to.equal(400);
+
+            expect(response.body.code)
+                .to.equal('INVALID_DATA');
+
+            const getResponse = await request(app)
+                .get(`/api/users/${userId}`);
+
+            expect(getResponse.status).to.equal(200);
+
+            expect(getResponse.body.payload.role)
+                .to.equal('customer');
+
+        });
+
+    });
+
 });

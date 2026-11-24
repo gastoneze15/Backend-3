@@ -1,8 +1,9 @@
 
 import winston from "winston";
 import DailyRotateFile from "winston-daily-rotate-file";
+import { config } from "./env.config.js";
 
-const isDevelopment = process.env.NODE_ENV === "development";
+const isDevelopment = config.nodeEnv === "development";
 
 const levels = {
     fatal: 0,

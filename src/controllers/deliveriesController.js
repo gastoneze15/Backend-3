@@ -29,6 +29,25 @@ class DeliveriesController {
         }
     }
 
+    // Cargar comprobante de entrega - Modulo 7
+    async uploadProof(req, res, next) {
+        try {
+
+            const updatedDelivery = await deliveriesService.uploadProof(
+                req.params.id,
+                req.file
+            );
+
+            return res.status(201).json({
+                status: 'success',
+                message: 'Comprobante de entrega cargado correctamente',
+                payload: updatedDelivery
+            });
+
+        } catch (error) {
+            next(error);
+        }
+    }
 }
 
 export default new DeliveriesController();

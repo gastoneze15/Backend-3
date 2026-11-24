@@ -14,8 +14,19 @@ const swaggerOptions = {
             version: '1.0.0',
             description:
                 'API desarrollada para Programación Backend III. ' +
-                'Incluye gestión de usuarios y productos, generación de mocks, ' +
-                'manejo centralizado de errores y logging con Winston.'
+                'ShipNow es un sistema de gestión de pedidos y entregas ' +
+                'implementado mediante una arquitectura por capas. ' +
+                'Incluye gestión de usuarios, pedidos y entregas, ' +
+                'generación de datos de prueba mediante mocks, ' +
+                'manejo centralizado de errores, logging con Winston, ' +
+                'testing funcional automatizado con Mocha, Chai y Supertest, ' +
+                'y gestión de archivos mediante Multer. ' +
+                'Permite cargar documentos de usuarios, licencias de conducir ' +
+                'y comprobantes de entrega mediante solicitudes multipart/form-data. ' +
+                'Los archivos se almacenan físicamente en carpetas organizadas ' +
+                'y sus metadatos se registran en MongoDB. ' +
+                'Se aplican validaciones de formato, tamaño, tipo de documento ' +
+                'y existencia de las entidades asociadas.'
         },
         servers: [
             {
@@ -24,14 +35,31 @@ const swaggerOptions = {
             }
         ],
         tags: [
-            { name: 'Users', description: 'Gestión de usuarios' },
-            { name: 'Orders', description: 'Gestión de pedidos' },
-            { name: 'Deliveries', description: 'Gestión de entregas' },
-            { name: 'Mocks', description: 'Generación de datos de prueba' },
-            { name: 'Logger', description: 'Pruebas del sistema de logging' }
+            {
+                name: 'Users',
+                description: 'Gestión de usuarios, documentos y licencias de conducir'
+            },
+            {
+                name: 'Orders',
+                description: 'Gestión de pedidos'
+            },
+            {
+                name: 'Deliveries',
+                description: 'Gestión de entregas y carga de comprobantes'
+            },
+            {
+                name: 'Mocks',
+                description: 'Generación de datos de prueba'
+            },
+            {
+                name: 'Logger',
+                description: 'Pruebas del sistema de logging'
+            }
         ]
     },
-apis: [path.join(__dirname, '../docs/*.yaml').replace(/\\/g, '/')]
+    apis: [
+        path.join(__dirname, '../docs/*.yaml').replace(/\\/g, '/')
+    ]
 };
 
 const swaggerSpec = swaggerJSDoc(swaggerOptions);

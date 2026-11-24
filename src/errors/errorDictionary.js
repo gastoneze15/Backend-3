@@ -1,27 +1,35 @@
 
 export const ERROR_CODES = Object.freeze({
-    // Usuarios
+
     USER_NOT_FOUND: 'USER_NOT_FOUND',
     USER_ALREADY_EXISTS: 'USER_ALREADY_EXISTS',
     INVALID_USER_DATA: 'INVALID_USER_DATA',
     ADMIN_CREATION_FORBIDDEN: 'ADMIN_CREATION_FORBIDDEN',
 
-    // Productos
     PRODUCT_NOT_FOUND: 'PRODUCT_NOT_FOUND',
     PRODUCT_ALREADY_EXISTS: 'PRODUCT_ALREADY_EXISTS',
     INVALID_PRODUCT_DATA: 'INVALID_PRODUCT_DATA',
     INVALID_PRODUCT_PRICE: 'INVALID_PRODUCT_PRICE',
 
-    // Pedidos y entregas
     ORDER_NOT_FOUND: 'ORDER_NOT_FOUND',
     DELIVERY_NOT_FOUND: 'DELIVERY_NOT_FOUND',
     INVALID_ORDER_STATUS: 'INVALID_ORDER_STATUS',
 
-    // Mocks
     INVALID_MOCK_QUANTITY: 'INVALID_MOCK_QUANTITY',
     MOCKS_NOT_ALLOWED: 'MOCKS_NOT_ALLOWED',
 
-    // Errores generales
+    LOGGER_NOT_ALLOWED: 'LOGGER_NOT_ALLOWED',
+
+    FILE_REQUIRED: 'FILE_REQUIRED',
+    INVALID_FILE_TYPE: 'INVALID_FILE_TYPE',
+    FILE_TOO_LARGE: 'FILE_TOO_LARGE',
+    INVALID_FILE_FIELD: 'INVALID_FILE_FIELD',
+    INVALID_DOCUMENT_TYPE: 'INVALID_DOCUMENT_TYPE',
+    FILE_UPLOAD_ERROR: 'FILE_UPLOAD_ERROR',
+    INVALID_MULTIPART_DATA: 'INVALID_MULTIPART_DATA',
+
+    PROOF_ALREADY_EXISTS: 'PROOF_ALREADY_EXISTS',
+
     INVALID_ID: 'INVALID_ID',
     INVALID_DATA: 'INVALID_DATA',
     DUPLICATE_RECORD: 'DUPLICATE_RECORD',
@@ -31,7 +39,7 @@ export const ERROR_CODES = Object.freeze({
 });
 
 export const ERROR_DICTIONARY = Object.freeze({
-    // Usuarios
+
     [ERROR_CODES.USER_NOT_FOUND]: {
         statusCode: 404,
         message: 'Usuario no encontrado'
@@ -52,7 +60,6 @@ export const ERROR_DICTIONARY = Object.freeze({
         message: 'No es posible crear administradores desde este endpoint'
     },
 
-    // Productos
     [ERROR_CODES.PRODUCT_NOT_FOUND]: {
         statusCode: 404,
         message: 'Producto no encontrado'
@@ -73,7 +80,6 @@ export const ERROR_DICTIONARY = Object.freeze({
         message: 'El precio del producto no es válido'
     },
 
-    // Pedidos y entregas
     [ERROR_CODES.ORDER_NOT_FOUND]: {
         statusCode: 404,
         message: 'Pedido no encontrado'
@@ -89,7 +95,6 @@ export const ERROR_DICTIONARY = Object.freeze({
         message: 'El estado del pedido no es válido'
     },
 
-    // Mocks
     [ERROR_CODES.INVALID_MOCK_QUANTITY]: {
         statusCode: 400,
         message: 'La cantidad de mocks debe ser un número entero positivo'
@@ -97,10 +102,53 @@ export const ERROR_DICTIONARY = Object.freeze({
 
     [ERROR_CODES.MOCKS_NOT_ALLOWED]: {
         statusCode: 403,
-        message: 'La generación de datos solo está disponible en desarrollo'
+        message: 'La generación de datos solo está disponible en desarrollo y testing'
     },
 
-    // Errores generales
+    [ERROR_CODES.LOGGER_NOT_ALLOWED]: {
+        statusCode: 403,
+        message: 'La prueba de logging solo está disponible en desarrollo y testing'
+    },
+
+    [ERROR_CODES.FILE_REQUIRED]: {
+        statusCode: 400,
+        message: 'Es obligatorio adjuntar un archivo'
+    },
+
+    [ERROR_CODES.INVALID_FILE_TYPE]: {
+        statusCode: 415,
+        message: 'El tipo de archivo no está permitido'
+    },
+
+    [ERROR_CODES.FILE_TOO_LARGE]: {
+        statusCode: 413,
+        message: 'El archivo supera el tamaño máximo permitido'
+    },
+
+    [ERROR_CODES.INVALID_FILE_FIELD]: {
+        statusCode: 400,
+        message: 'El campo utilizado para cargar el archivo no es válido'
+    },
+
+    [ERROR_CODES.INVALID_DOCUMENT_TYPE]: {
+        statusCode: 400,
+        message: 'El tipo de documento proporcionado no es válido'
+    },
+
+    [ERROR_CODES.FILE_UPLOAD_ERROR]: {
+        statusCode: 500,
+        message: 'Ocurrió un error al guardar el archivo'
+    },
+
+    [ERROR_CODES.INVALID_MULTIPART_DATA]: {
+        statusCode: 400,
+        message: 'Los datos de carga multipart/form-data no son válidos'
+    },
+[ERROR_CODES.PROOF_ALREADY_EXISTS]: {
+    statusCode: 409,
+    message: 'La entrega ya tiene un comprobante asociado'
+},
+
     [ERROR_CODES.INVALID_ID]: {
         statusCode: 400,
         message: 'El identificador proporcionado no es válido'

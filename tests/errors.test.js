@@ -105,4 +105,26 @@ describe('ShipNow API - Manejo de errores', function () {
 
     });
 
+    it('Debe rechazar un cuerpo JSON malformado', async function () {
+
+        const response = await request(app)
+            .post('/api/users')
+            .set('Content-Type', 'application/json')
+            .send('{"firstName": "Usuario",}');
+
+        expect(response.status).to.equal(400);
+
+        expect(response.body.status)
+            .to.equal('error');
+
+        expect(response.body.code)
+            .to.equal('INVALID_DATA');
+
+        expect(response.body.message)
+            .to.equal(
+                'El cuerpo de la solicitud contiene un JSON inválido'
+            );
+
+    });
+
 });

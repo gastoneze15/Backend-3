@@ -13,7 +13,9 @@ paths:
         Es una herramienta de validación técnica y no forma
         parte de las funcionalidades de negocio de ShipNow.
 
-        Solo está disponible cuando NODE_ENV es development.
+        Solo está disponible cuando NODE_ENV es development o test.
+        En desarrollo se muestran los seis niveles de logging.
+        En testing se aplica el nivel info.
 
       responses:
         '200':
@@ -42,15 +44,15 @@ paths:
                       - fatal
 
         '403':
-          description: Endpoint no disponible fuera del entorno de desarrollo.
+          description: Endpoint no disponible fuera de desarrollo y testing.
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
               example:
                 status: error
-                code: MOCKS_NOT_ALLOWED
-                message: La generación de datos solo está disponible en desarrollo
+                code: LOGGER_NOT_ALLOWED
+                message: La prueba de logging solo está disponible en desarrollo y testing
 
         '500':
           description: Error interno del servidor.

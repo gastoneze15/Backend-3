@@ -1,6 +1,8 @@
-import User from "../models/user.model.js";
+
+import User from '../models/user.model.js';
 
 class UsersRepository {
+
     async findAll() {
         return User.find();
     }
@@ -21,12 +23,31 @@ class UsersRepository {
         return User.findByIdAndUpdate(
             id,
             updatedUser,
-            { new: true }
+            {
+                new: true,
+                runValidators: true
+            }
         );
     }
 
     async delete(id) {
         return User.findByIdAndDelete(id);
+    }
+
+    // Asociar documentos al usuario - Modulo 7
+    async addDocument(id, documentMetadata) {
+        return User.findByIdAndUpdate(
+            id,
+            {
+                $push: {
+                    documents: documentMetadata
+                }
+            },
+            {
+                new: true,
+                runValidators: true
+            }
+        ).select('-password');
     }
 }
 

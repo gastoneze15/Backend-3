@@ -1,6 +1,59 @@
 
 components:
   schemas:
+    FileMetadata:
+      type: object
+      description: Metadatos de un archivo almacenado mediante Multer.
+      required:
+        - originalName
+        - fileName
+        - path
+        - mimeType
+        - size
+        - documentType
+        - uploadedAt
+      properties:
+        _id:
+          type: string
+          description: Identificador del documento en MongoDB.
+          example: "507f1f77bcf86cd799439012"
+        originalName:
+          type: string
+          description: Nombre original del archivo.
+          example: "documento.png"
+        fileName:
+          type: string
+          description: Nombre único generado mediante UUID.
+          example: "08b5eb3f-22c9-4423-98b9-755a24d1b538.png"
+        path:
+          type: string
+          description: Ruta relativa a la carpeta de almacenamiento.
+          example: "documents/08b5eb3f-22c9-4423-98b9-755a24d1b538.png"
+        mimeType:
+          type: string
+          enum:
+            - application/pdf
+            - image/jpeg
+            - image/png
+          example: "image/png"
+        size:
+          type: integer
+          description: Tamaño del archivo en bytes. Máximo 5 MiB.
+          minimum: 1
+          maximum: 5242880
+          example: 47001
+        documentType:
+          type: string
+          enum:
+            - user_document
+            - driver_license
+            - delivery_proof
+          example: "user_document"
+        uploadedAt:
+          type: string
+          format: date-time
+          description: Fecha y hora de carga del archivo.
+
     User:
       type: object
       description: Usuario registrado en ShipNow.
@@ -29,13 +82,9 @@ components:
           example: "customer"
         documents:
           type: array
+          description: Metadatos de los documentos asociados al usuario.
           items:
-            type: object
-            properties:
-              name:
-                type: string
-              reference:
-                type: string
+            $ref: '#/components/schemas/FileMetadata'
         createdAt:
           type: string
           format: date-time
@@ -70,12 +119,44 @@ components:
           description: No se permite crear administradores directamente.
           example: "customer"
 
+    UploadUserDocument:
+      type: object
+      required:
+        - file
+        - documentType
+      properties:
+        file:
+          type: string
+          format: binary
+          description: Archivo PDF, JPG, JPEG o PNG de hasta 5 MiB.
+        documentType:
+          type: string
+          description: Tipo de documento que se desea cargar.
+          enum:
+            - user_document
+            - driver_license
+          example: "user_document"
+
+    UploadDeliveryProof:
+      type: object
+      required:
+        - file
+      properties:
+        file:
+          type: string
+          format: binary
+          description: Comprobante PDF, JPG, JPEG o PNG de hasta 5 MiB.
+
     SuccessResponse:
       type: object
       properties:
         status:
           type: string
           example: "success"
+        message:
+          type: string
+          description: Mensaje de confirmación, cuando corresponda.
+          example: "Operación realizada correctamente"
         payload:
           description: Datos devueltos por el endpoint.
 
@@ -187,6 +268,11 @@ components:
               type: string
               format: date-time
               nullable: true
+            proof:
+              type: object
+              nullable: true
+              allOf:
+                - $ref: '#/components/schemas/FileMetadata'
         createdAt:
           type: string
           format: date-time
@@ -266,6 +352,12 @@ components:
           type: string
           format: date-time
           nullable: true
+        proof:
+          type: object
+          nullable: true
+          description: Metadatos del comprobante asociado a la entrega.
+          allOf:
+            - $ref: '#/components/schemas/FileMetadata'
         createdAt:
           type: string
           format: date-time

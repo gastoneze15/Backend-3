@@ -2,6 +2,7 @@
 import { Router } from 'express';
 
 import logger from '../config/logger.config.js';
+import { config } from '../config/env.config.js';
 import CustomError from '../errors/CustomError.js';
 import { ERROR_CODES } from '../errors/errorDictionary.js';
 
@@ -16,10 +17,10 @@ router.get('/test', (req, res, next) => {
             'test'
         ];
 
-        // Bloquear el endpoint en producción
-        if (!allowedEnvironments.includes(process.env.NODE_ENV)) {
+        // Permitir únicamente desarrollo y testing
+        if (!allowedEnvironments.includes(config.nodeEnv)) {
             throw CustomError.create(
-                ERROR_CODES.MOCKS_NOT_ALLOWED
+                ERROR_CODES.LOGGER_NOT_ALLOWED
             );
         }
 
