@@ -1,16 +1,12 @@
+ShipNow API
+Proyecto final de Programación Backend III - Coderhouse.
 
-# ShipNow API
-
-Pre-entregas de los Módulos 1, 2, 3, 4 y 5 de Programación Backend III.
-
-## Descripción
-
+Incluye los Módulos 1 al 6: arquitectura por capas, mocks, manejo de errores, logging, Swagger y testing automatizado.
+Descripción
 ShipNow API es una aplicación desarrollada con Node.js, Express y MongoDB para la gestión de usuarios, productos, pedidos y entregas, además de la generación de datos de prueba.
 
-El proyecto incorpora una arquitectura por capas, generación de mocks, manejo centralizado de errores, logging profesional con Winston y documentación interactiva mediante Swagger y OpenAPI 3.0.3.
-
-## Tecnologías utilizadas
-
+El proyecto incorpora arquitectura por capas, generación de mocks, manejo centralizado de errores, logging con Winston, documentación Swagger/OpenAPI 3.0.3 y testing automatizado.
+Tecnologías utilizadas
 - Node.js
 - JavaScript (ES Modules)
 - Express
@@ -26,41 +22,43 @@ El proyecto incorpora una arquitectura por capas, generación de mocks, manejo c
 - swagger-ui-express
 - swagger-jsdoc
 - OpenAPI 3.0.3
-
-## Arquitectura
-
+- Mocha, Chai, Supertest y cross-env
+Arquitectura
 El proyecto utiliza una arquitectura por capas:
 
 Router
+
   ↓
+
 Controller
+
   ↓
+
 Service
+
   ↓
+
 Repository
+
   ↓
+
 Model
+
   ↓
+
 MongoDB
-
-### Router
-
+Router
 Define las rutas HTTP y conecta las solicitudes con los controladores correspondientes.
-
-### Controller
-
+Controller
 Recibe las peticiones HTTP, llama al Service correspondiente y devuelve las respuestas exitosas.
 
 No realiza consultas directas a MongoDB.
 
-Los errores se derivan al middleware global mediante `next(error)`.
-
-### Service
-
+Los errores se derivan al middleware global mediante next(error).
+Service
 Contiene la lógica de negocio y las validaciones.
 
 Entre sus responsabilidades se encuentran:
-
 - Validar usuarios y productos.
 - Evitar la creación de administradores desde el endpoint público.
 - Detectar registros inexistentes o duplicados.
@@ -70,80 +68,68 @@ Entre sus responsabilidades se encuentran:
 - Generar y relacionar datos simulados.
 - Validar identificadores de pedidos y entregas.
 - Lanzar errores personalizados cuando corresponde.
-
-### Repository
-
+Repository
 Centraliza el acceso a MongoDB mediante Mongoose.
 
-Contiene operaciones como `find`, `findById`, `findOne`, `create`, `findByIdAndUpdate` y `findByIdAndDelete`.
+Contiene operaciones como find, findById, findOne, create, findByIdAndUpdate y findByIdAndDelete.
 
 Esta separación permite mantener desacoplada la lógica de negocio del acceso a los datos.
-
-## Instalación
-
+Instalación
 Clonar el repositorio:
 
-```bash
 git clone https://github.com/gastoneze15/Backend-3.git
-```
 
 Ingresar a la carpeta:
 
-```bash
 cd Backend-3
-```
 
 Instalar las dependencias:
 
-```bash
 npm install
-```
 
 Es necesario tener Node.js y MongoDB instalados.
-
-## Variables de entorno
-
+Variables de entorno
 La configuración se centraliza en:
 
-`src/config/env.config.js`
+src/config/env.config.js
 
-Crear un archivo `.env` en la raíz del proyecto tomando como referencia `.env.example`.
+Crear un archivo .env en la raíz del proyecto tomando como referencia .env.example.
 
 Ejemplo para desarrollo:
 
-```env
 PORT=8080
+
 MONGODB_URI=mongodb://localhost:27017/shipnow
+
 NODE_ENV=development
-```
 
 Para probar los mocks se recomienda utilizar una base de datos independiente:
 
-```env
 PORT=8080
+
 MONGODB_URI=mongodb://localhost:27017/shipnow_mocks
+
 NODE_ENV=development
-```
 
 Esto permite realizar pruebas sin modificar los registros de la base original.
 
-El archivo `.env` no se incluye en el repositorio por seguridad.
-
-## Ejecución
-
+El archivo .env no se incluye en el repositorio por seguridad. Tampoco debe versionarse .env.test.
+Entorno de testing
+Crear .env.test con una base local exclusiva y descartable:
+NODE_ENV=test
+PORT=8081
+MONGODB_URI=mongodb://127.0.0.1:27017/shipnow_test
+Atención: npm test limpia las colecciones de shipnow_test. No guardar datos importantes allí. La configuración y el helper de tests verifican el entorno y la base antes de limpiar registros.
+Ejecución
 Asegurarse de que MongoDB esté ejecutándose.
 
 Iniciar el servidor:
 
-```bash
 npm start
-```
 
 También puede utilizarse:
 
-```bash
 node src/server.js
-```
 
 La API estará disponible en:
 
@@ -153,821 +139,883 @@ Para comprobar que el servidor funciona:
 
 GET http://localhost:8080/api/health
 
----
 
-# Módulo 1: Arquitectura por capas
-
+Módulo 1: Arquitectura por capas
 En el primer módulo se reorganizó ShipNow API utilizando las capas Controller, Service y Repository.
 
 Se implementaron operaciones de usuarios y productos, validaciones y constantes para evitar valores escritos directamente en el código.
-
-## Endpoints principales
-
+Endpoints principales
 | Método | Ruta | Descripción |
+
 |---|---|---|
+
 | GET | /api/health | Verificar el estado de la API |
+
 | GET | /api/users | Listar usuarios |
+
 | GET | /api/users/:id | Obtener usuario por ID |
+
 | POST | /api/users | Crear usuario |
+
 | PUT | /api/users/:id | Actualizar usuario |
+
 | DELETE | /api/users/:id | Eliminar usuario |
+
 | GET | /api/products | Listar productos disponibles |
+
 | GET | /api/products?all=true | Listar todos los productos |
+
 | GET | /api/products/:id | Obtener producto por ID |
+
 | POST | /api/products | Crear producto |
+
 | PUT | /api/products/:id | Actualizar producto |
+
 | DELETE | /api/products/:id | Eliminar producto |
+
 | GET | /api/products/:id/shipping-cost | Calcular el costo de envío |
-
-## Constantes
-
+Constantes
 Las constantes se encuentran centralizadas en:
 
-`src/constants/index.js`
+src/constants/index.js
 
 Se utilizan para representar:
-
 - Roles de usuario.
 - Estados de productos.
 - Estados de pedidos.
 - Estados de entregas.
 - Prioridades de entrega.
 
----
 
-# Módulo 2: Generación de Mocks
-
+Módulo 2: Generación de Mocks
 Se incorporó un módulo para generar datos ficticios de clientes, repartidores, pedidos y entregas.
 
-La implementación utiliza `@faker-js/faker` para generar información simulada y `bcryptjs` para almacenar las contraseñas mediante hashes.
+La implementación utiliza @faker-js/faker para generar información simulada y bcryptjs para almacenar las contraseñas mediante hashes.
 
 El módulo respeta los modelos reales y la arquitectura por capas.
-
-## Endpoints de mocks
-
+Endpoints de mocks
 | Método | Ruta | Descripción |
+
 |---|---|---|
+
 | GET | /api/mocks/users | Generar clientes ficticios sin guardarlos |
+
 | GET | /api/mocks/drivers | Generar repartidores ficticios sin guardarlos |
+
 | POST | /api/mocks/generate | Insertar datos relacionados en MongoDB |
 
 Los endpoints GET generan datos en memoria y no incluyen contraseñas en sus respuestas.
-
-## Generación de registros
-
-Por defecto, `POST /api/mocks/generate` crea:
-
-- 5 clientes con rol `customer`.
-- 3 repartidores con rol `driver`.
+Generación de registros
+Por defecto, POST /api/mocks/generate crea:
+- 5 clientes con rol customer.
+- 3 repartidores con rol driver.
 - 5 pedidos asociados a clientes.
 - 5 entregas asociadas a pedidos y repartidores.
-
 También permite indicar cantidades mediante un body JSON:
 
-```json
 {
+
   "customers": 2,
+
   "drivers": 1
+
 }
-```
 
 En ese caso se generan dos clientes, un repartidor, dos pedidos y dos entregas.
 
 Cada ejecución crea un nuevo conjunto de registros.
-
-## Relaciones entre entidades
-
+Relaciones entre entidades
 Los registros generados mantienen las siguientes relaciones:
-
 - Cada pedido referencia a un cliente existente.
 - Cada entrega referencia a un pedido existente.
 - Cada entrega tiene un repartidor asignado.
 - Cada pedido referencia a su entrega correspondiente.
-
 Las referencias utilizan identificadores ObjectId de MongoDB.
-
-## Roles, estados y prioridades
-
-Los datos simulados utilizan las constantes definidas en `src/constants/index.js`.
+Roles, estados y prioridades
+Los datos simulados utilizan las constantes definidas en src/constants/index.js.
 
 Esto permite mantener consistencia con los modelos de Mongoose.
-
-## Pruebas con Postman
-
-### 1. Generar clientes
-
+Pruebas con Postman
+1. Generar clientes
 GET http://localhost:8080/api/mocks/users
 
-Resultado esperado: `200 OK` con 10 clientes ficticios.
-
-### 2. Generar repartidores
-
+Resultado esperado: 200 OK con 10 clientes ficticios.
+2. Generar repartidores
 GET http://localhost:8080/api/mocks/drivers
 
-Resultado esperado: `200 OK` con 10 repartidores ficticios.
-
-### 3. Insertar datos en MongoDB
-
+Resultado esperado: 200 OK con 10 repartidores ficticios.
+3. Insertar datos en MongoDB
 POST http://localhost:8080/api/mocks/generate
 
-Sin body, la respuesta esperada es `201 Created`:
+Sin body, la respuesta esperada es 201 Created:
 
-```json
 {
+
   "status": "success",
+
   "message": "Datos de prueba generados correctamente",
+
   "payload": {
+
     "customers": 5,
+
     "drivers": 3,
+
     "orders": 5,
+
     "deliveries": 5
+
   }
+
 }
-```
 
-### 4. Generar cantidades personalizadas
-
+4. Generar cantidades personalizadas
 POST http://localhost:8080/api/mocks/generate
 
 Body JSON:
 
-```json
 {
+
   "customers": 2,
+
   "drivers": 1
+
 }
-```
 
-Resultado esperado: `201 Created`, con dos clientes, un repartidor, dos pedidos y dos entregas.
-
-## Validación de relaciones
-
+Resultado esperado: 201 Created, con dos clientes, un repartidor, dos pedidos y dos entregas.
+Validación de relaciones
 Durante las pruebas se verificó que las referencias entre pedidos, entregas y usuarios fueran válidas.
 
 Resultados obtenidos en una ejecución:
-
 - Pedidos con relaciones válidas: 5 / 5.
 - Entregas con relaciones válidas: 5 / 5.
-
-## Limpieza ante errores
-
+Limpieza ante errores
 Si ocurre una falla durante la generación, el sistema intenta eliminar los registros creados.
 
 Como MongoDB local se utiliza sin replica set, esta limpieza compensatoria no equivale a una transacción y no garantiza una reversión completa ante todos los errores.
 
----
 
-# Módulo 3: Manejo profesional de errores
-
+Módulo 3: Manejo profesional de errores
 Se implementó un sistema centralizado de manejo de errores para ShipNow API.
 
 El objetivo es evitar respuestas de error dispersas y devolver un formato HTTP consistente.
-
-## Componentes
-
-- `src/errors/CustomError.js`: define los errores personalizados.
-- `src/errors/errorDictionary.js`: contiene los códigos, mensajes y estados HTTP.
-- `src/middlewares/errorHandler.js`: transforma los errores en respuestas HTTP uniformes.
-
+Componentes
+- src/errors/CustomError.js: define los errores personalizados.
+- src/errors/errorDictionary.js: contiene los códigos, mensajes y estados HTTP.
+- src/middlewares/errorHandler.js: transforma los errores en respuestas HTTP uniformes.
 Los Services detectan los errores del dominio y lanzan errores personalizados.
 
-Los Controllers derivan los errores mediante `next(error)`.
+Los Controllers derivan los errores mediante next(error).
 
 El middleware global genera la respuesta final de error.
-
-## Estructura de respuesta
-
+Estructura de respuesta
 Todos los errores utilizan el siguiente formato:
 
-```json
 {
+
   "status": "error",
+
   "code": "USER_NOT_FOUND",
+
   "message": "Usuario no encontrado"
+
 }
-```
 
-Cuando corresponde, se incluye el campo opcional `details`:
+Cuando corresponde, se incluye el campo opcional details:
 
-```json
 {
+
   "status": "error",
+
   "code": "INVALID_MOCK_QUANTITY",
+
   "message": "La cantidad de mocks debe ser un número entero positivo",
+
   "details": "La cantidad debe ser un número entero entre 1 y 100"
+
 }
-```
 
-## Diccionario de errores
-
+Diccionario de errores
 El diccionario incluye errores de usuarios, productos, pedidos, entregas, mocks y errores generales.
 
 | Código | HTTP | Descripción |
+
 |---|---|---|
+
 | USER_NOT_FOUND | 404 | Usuario inexistente |
+
 | PRODUCT_NOT_FOUND | 404 | Producto inexistente |
+
 | ORDER_NOT_FOUND | 404 | Pedido inexistente |
+
 | DELIVERY_NOT_FOUND | 404 | Entrega inexistente |
+
 | INVALID_ID | 400 | Identificador inválido |
+
 | INVALID_DATA | 400 | Datos inválidos |
+
 | INVALID_MOCK_QUANTITY | 400 | Cantidad inválida de mocks |
+
 | INVALID_PRODUCT_PRICE | 400 | Precio de producto inválido |
+
 | USER_ALREADY_EXISTS | 409 | Usuario duplicado |
+
 | PRODUCT_ALREADY_EXISTS | 409 | Producto duplicado |
+
 | DUPLICATE_RECORD | 409 | Registro duplicado |
+
 | MOCKS_NOT_ALLOWED | 403 | Generación de mocks no permitida |
+
 | DATABASE_ERROR | 500 | Error de base de datos |
+
 | ROUTE_NOT_FOUND | 404 | Ruta inexistente |
+
 | INTERNAL_ERROR | 500 | Error interno |
-
-## Pruebas de errores con Postman
-
+Pruebas de errores con Postman
 Para realizar las pruebas:
-
 1. Iniciar MongoDB.
-2. Configurar `.env` con `NODE_ENV=development`.
-3. Ejecutar `npm start`.
+2. Configurar .env con NODE_ENV=development.
+3. Ejecutar npm start.
 4. Abrir Postman.
-
-### 1. Ruta inexistente
-
+1. Ruta inexistente
 GET http://localhost:8080/api/ruta-inexistente
 
 Resultado esperado:
-
 - HTTP 404 Not Found.
-- Código `ROUTE_NOT_FOUND`.
-
-### 2. Usuario inexistente
-
+- Código ROUTE_NOT_FOUND.
+2. Usuario inexistente
 GET http://localhost:8080/api/users/507f1f77bcf86cd799439011
 
 Resultado esperado, si el ID no existe:
-
 - HTTP 404 Not Found.
-- Código `USER_NOT_FOUND`.
-
-### 3. Identificador inválido
-
+- Código USER_NOT_FOUND.
+3. Identificador inválido
 GET http://localhost:8080/api/users/123
 
 Resultado esperado:
-
 - HTTP 400 Bad Request.
-- Código `INVALID_ID`.
-
-### 4. Producto inexistente
-
+- Código INVALID_ID.
+4. Producto inexistente
 GET http://localhost:8080/api/products/507f1f77bcf86cd799439011
 
 Resultado esperado, si el ID no existe:
-
 - HTTP 404 Not Found.
-- Código `PRODUCT_NOT_FOUND`.
-
-### 5. Precio negativo
-
+- Código PRODUCT_NOT_FOUND.
+5. Precio negativo
 POST http://localhost:8080/api/products
 
 Body JSON:
 
-```json
 {
+
   "title": "Producto de prueba",
+
   "code": "TEST-ERROR-003",
+
   "price": -100,
+
   "stock": 5
+
 }
-```
 
 Resultado esperado:
-
 - HTTP 400 Bad Request.
-- Código `INVALID_PRODUCT_PRICE`.
-
-### 6. Cantidad negativa de mocks
-
+- Código INVALID_PRODUCT_PRICE.
+6. Cantidad negativa de mocks
 GET http://localhost:8080/api/mocks/users?quantity=-5
 
 Resultado esperado:
-
 - HTTP 400 Bad Request.
-- Código `INVALID_MOCK_QUANTITY`.
-
-### 7. Cantidad no numérica de mocks
-
+- Código INVALID_MOCK_QUANTITY.
+7. Cantidad no numérica de mocks
 GET http://localhost:8080/api/mocks/drivers?quantity=abc
 
 Resultado esperado:
-
 - HTTP 400 Bad Request.
-- Código `INVALID_MOCK_QUANTITY`.
-
-### 8. Cantidad inválida al insertar mocks
-
+- Código INVALID_MOCK_QUANTITY.
+8. Cantidad inválida al insertar mocks
 POST http://localhost:8080/api/mocks/generate
 
 Body JSON:
 
-```json
 {
+
   "customers": -5,
+
   "drivers": 3
+
 }
-```
 
 Resultado esperado:
-
 - HTTP 400 Bad Request.
-- Código `INVALID_MOCK_QUANTITY`.
-
-### 9. Generación válida de mocks
-
+- Código INVALID_MOCK_QUANTITY.
+9. Generación válida de mocks
 POST http://localhost:8080/api/mocks/generate
 
 Body JSON:
 
-```json
 {
+
   "customers": 2,
+
   "drivers": 1
+
 }
-```
 
 Resultado esperado:
-
 - HTTP 201 Created.
 - Dos clientes.
 - Un repartidor.
 - Dos pedidos.
 - Dos entregas.
-
-## Errores de MongoDB
-
+Errores de MongoDB
 El middleware global contempla:
-
 - Errores de validación de Mongoose: 400 Bad Request.
 - Identificadores inválidos: 400 Bad Request.
 - Registros duplicados: 409 Conflict.
 - Errores inesperados: 500 Internal Server Error.
-
 Los errores inesperados se registran mediante Winston sin exponer detalles internos al cliente.
+Seguridad
+La inserción de mocks solo está habilitada con NODE_ENV=development o NODE_ENV=test. Se rechaza en producción.
 
-## Seguridad
 
-La inserción de mocks solo está habilitada cuando:
-
-`NODE_ENV=development`
-
-En otros entornos, la generación de registros de prueba se rechaza.
-
----
-
-# Módulo 4: Logging y monitoreo básico
-
-Se incorporó Winston como logger centralizado, junto con `winston-daily-rotate-file` para almacenar y rotar los registros importantes.
+Módulo 4: Logging y monitoreo básico
+Se incorporó Winston como logger centralizado, junto con winston-daily-rotate-file para almacenar y rotar los registros importantes.
 
 El sistema complementa al middleware global de errores del módulo 3.
-
-## Configuración
-
-El logger se configura en `src/config/logger.config.js` y se reutiliza en distintos módulos de la aplicación.
+Configuración
+El logger se configura en src/config/logger.config.js y se reutiliza en distintos módulos de la aplicación.
 
 Cada registro muestra la fecha, la hora, el nivel y el mensaje.
 
 Ejemplos:
 
-```text
 2026-11-17 09:48:40 [info] Conexión a MongoDB establecida correctamente
+
 2026-11-17 09:48:40 [info] Servidor ShipNow escuchando en el puerto 8080
+
 2026-11-17 09:48:59 [warning] Cantidad inválida de mocks recibida: -5
-```
 
-## Niveles de logging
-
+Niveles de logging
 | Nivel | Uso |
+
 |---|---|
+
 | debug | Información detallada para depuración |
+
 | http | Eventos relacionados con solicitudes HTTP |
+
 | info | Inicio del servidor, conexión a MongoDB y operaciones exitosas |
+
 | warning | Errores esperados, validaciones y situaciones que requieren atención |
+
 | error | Fallas de operaciones o errores inesperados |
+
 | fatal | Fallas críticas del sistema |
-
-## Desarrollo y producción
-
-El comportamiento depende de `NODE_ENV` en el archivo `.env`.
-
-- `NODE_ENV=development`: la consola muestra todos los niveles, desde debug hasta fatal.
-- `NODE_ENV=production`: la consola muestra desde info hasta fatal; los niveles debug y http quedan excluidos.
-
+Desarrollo y producción
+El comportamiento depende de NODE_ENV en el archivo .env.
+- NODE_ENV=development: la consola muestra todos los niveles, desde debug hasta fatal.
+- NODE_ENV=production: la consola muestra desde info hasta fatal; los niveles debug y http quedan excluidos.
 En ambos entornos, el archivo de errores registra únicamente los niveles error y fatal.
-
-## Integración con ShipNow
-
+Integración con ShipNow
 El logger se utiliza para registrar:
-
 - Inicio del servidor.
 - Conexión exitosa o fallida a MongoDB.
 - Errores procesados por el middleware global.
 - Eventos relevantes de generación de mocks.
-
 Las cantidades inválidas se registran como advertencias y las fallas durante la generación de mocks como errores.
 
 Las respuestas HTTP conservan el formato uniforme implementado en el módulo 3.
 
 Los logs son registros internos y no se envían al cliente.
+Endpoint de prueba
+Con MongoDB funcionando y NODE_ENV=development, iniciar la aplicación:
 
-## Endpoint de prueba
-
-Con MongoDB funcionando y `NODE_ENV=development`, iniciar la aplicación:
-
-```bash
 npm start
-```
 
 En Postman ejecutar:
 
 GET http://localhost:8080/api/logger/test
 
-Respuesta esperada: `200 OK`.
+Respuesta esperada: 200 OK.
 
-```json
 {
+
   "status": "success",
+
   "message": "Prueba de logging ejecutada correctamente",
+
   "levels": [
+
     "debug",
+
     "http",
+
     "info",
+
     "warning",
+
     "error",
+
     "fatal"
+
   ]
+
 }
-```
 
 El endpoint emite un mensaje por cada nivel.
 
 En desarrollo se pueden verificar los seis registros en la consola.
 
-Está restringido al entorno de desarrollo.
+Está restringido a los entornos de desarrollo y testing.
 
 Los mensajes de nivel error y fatal del endpoint son pruebas intencionales, no fallas reales del servidor.
+Archivos de logs y rotación
+Los registros de errores se guardan automáticamente en la carpeta logs/, con archivos diarios como:
 
-## Archivos de logs y rotación
-
-Los registros de errores se guardan automáticamente en la carpeta `logs/`, con archivos diarios como:
-
-`logs/error-2026-11-17.log`
+logs/error-2026-11-17.log
 
 La configuración de rotación utiliza:
-
 - Nombre de archivo con fecha (YYYY-MM-DD).
 - Tamaño máximo de 10 MB por archivo.
 - Retención de archivos durante 14 días.
 - Filtro para persistir solamente error y fatal.
-
 Para inspeccionar el archivo en Git Bash:
 
-```bash
 ls -la logs
+
 cat logs/error-*.log
-```
 
 Después de llamar al endpoint de prueba, el archivo debe incluir las entradas de prueba de nivel error y fatal, sin entradas info, warning, http o debug.
+Archivos excluidos de Git
+El archivo .gitignore debe contener:
 
-## Archivos excluidos de Git
-
-El archivo `.gitignore` debe contener:
-
-```gitignore
 node_modules/
+
 .env
+
 logs/
-```
 
 De esta manera, las dependencias instaladas, las variables de entorno y los archivos de logs generados localmente no se suben a GitHub.
 
----
 
-# Módulo 5: Documentación de API con Swagger
-
+Módulo 5: Documentación de API con Swagger
 Se incorporó documentación interactiva de la API mediante Swagger UI y OpenAPI 3.0.3.
 
 El objetivo es documentar los endpoints existentes, sus parámetros, las estructuras de datos y las posibles respuestas HTTP.
 
 La documentación permite explorar los recursos y ejecutar solicitudes directamente desde el navegador.
-
-## Dependencias
-
+Dependencias
 Se incorporaron las siguientes librerías:
-
-- `swagger-ui-express`
-- `swagger-jsdoc`
-
+- swagger-ui-express
+- swagger-jsdoc
 La especificación OpenAPI se configura en:
 
-`src/config/swagger.config.js`
+src/config/swagger.config.js
 
 Los archivos de documentación se encuentran en:
 
-`src/docs/`
-
-## Acceso a Swagger
-
+src/docs/
+Acceso a Swagger
 Primero, iniciar MongoDB y ejecutar:
 
-```bash
 npm start
-```
 
 Después abrir en el navegador:
 
 http://localhost:8080/api/docs
 
-Swagger UI muestra los endpoints documentados y permite probarlos mediante las opciones `Try it out` y `Execute`.
-
-## Organización de la documentación
-
+Swagger UI muestra los endpoints documentados y permite probarlos mediante las opciones Try it out y Execute.
+Organización de la documentación
 La documentación se divide en cinco secciones:
 
 | Sección | Descripción |
+
 |---|---|
+
 | Users | Gestión de usuarios |
-| Orders | Consulta de pedidos |
+
+| Orders | Consulta, creación y actualización de estado de pedidos |
+
 | Deliveries | Consulta de entregas |
+
 | Mocks | Generación de datos ficticios |
+
 | Logger | Pruebas del sistema de logging |
-
-## Archivos de Swagger
-
+Archivos de Swagger
 La documentación se organiza en los siguientes archivos:
-
-- `src/config/swagger.config.js`: configuración general de OpenAPI.
-- `src/docs/schemas.yaml`: esquemas de datos reutilizables.
-- `src/docs/users.yaml`: documentación de usuarios.
-- `src/docs/orders.yaml`: documentación de pedidos.
-- `src/docs/deliveries.yaml`: documentación de entregas.
-- `src/docs/mocks.yaml`: documentación de mocks.
-- `src/docs/logger.yaml`: documentación del logger.
-
+- src/config/swagger.config.js: configuración general de OpenAPI.
+- src/docs/schemas.yaml: esquemas de datos reutilizables.
+- src/docs/users.yaml: documentación de usuarios.
+- src/docs/orders.yaml: documentación de pedidos.
+- src/docs/deliveries.yaml: documentación de entregas.
+- src/docs/mocks.yaml: documentación de mocks.
+- src/docs/logger.yaml: documentación del logger.
 Esta organización permite mantener separadas las definiciones de cada recurso.
-
-## Esquemas documentados
-
+Esquemas documentados
 Se definieron los siguientes esquemas:
 
 | Esquema | Descripción |
+
 |---|---|
+
 | User | Información de un usuario |
+
 | CreateUser | Datos necesarios para crear un usuario |
+
 | OrderItem | Producto incluido en un pedido |
+
 | Order | Información de un pedido |
+
 | Delivery | Información de una entrega |
+
 | SuccessResponse | Estructura general de respuesta exitosa |
+
 | ErrorResponse | Estructura general de respuesta de error |
 
-Los esquemas permiten reutilizar las estructuras de datos en distintos endpoints mediante referencias `$ref`.
-
-## Endpoints documentados
-
-### Users
-
+Los esquemas permiten reutilizar las estructuras de datos en distintos endpoints mediante referencias $ref.
+Endpoints documentados
+Users
 | Método | Ruta | Descripción |
+
 |---|---|---|
+
 | GET | /api/users | Obtener todos los usuarios |
+
 | GET | /api/users/{id} | Obtener un usuario por ID |
+
 | POST | /api/users | Crear un usuario |
+
 | PUT | /api/users/{id} | Actualizar un usuario |
+
 | DELETE | /api/users/{id} | Eliminar un usuario |
-
-### Orders
-
+Orders
 | Método | Ruta | Descripción |
+
 |---|---|---|
+
 | GET | /api/orders | Obtener todos los pedidos |
+
 | GET | /api/orders/{id} | Obtener un pedido por ID |
+| POST | /api/orders | Crear un pedido |
+| PATCH | /api/orders/{id}/status | Actualizar el estado de un pedido |
 
 Para incorporar estas consultas se agregaron repositorio, servicio, controlador y rutas específicas de pedidos.
 
-Las consultas permiten obtener los pedidos almacenados en MongoDB, incluyendo información del cliente y la entrega asociada.
+Las consultas permiten obtener los pedidos almacenados en MongoDB, incluyendo información del cliente y la entrega asociada. También se puede crear un pedido para un cliente existente y actualizar su estado.
 
-### Deliveries
-
+Ejemplo de creación (reemplazar customer por un ID de usuario existente):
+{
+  "customer": "507f1f77bcf86cd799439011",
+  "items": [{ "name": "Producto de prueba", "quantity": 2, "price": 1500 }],
+  "deliveryAddress": "Av. Corrientes 1234"
+}
+El total se calcula automáticamente (3000 en este ejemplo). Estados permitidos: created, assigned, picked_up, in_transit, delivered y cancelled. Para cambiarlo, enviar PATCH /api/orders/:id/status con { "status": "assigned" }.
+Deliveries
 | Método | Ruta | Descripción |
+
 |---|---|---|
+
 | GET | /api/deliveries | Obtener todas las entregas |
+
 | GET | /api/deliveries/{id} | Obtener una entrega por ID |
 
 Para incorporar estas consultas se agregaron repositorio, servicio, controlador y rutas específicas de entregas.
 
 Las consultas permiten obtener las entregas almacenadas en MongoDB, incluyendo información del pedido y el repartidor asociado.
-
-### Mocks
-
+Mocks
 | Método | Ruta | Descripción |
+
 |---|---|---|
+
 | GET | /api/mocks/users | Generar usuarios ficticios |
+
 | GET | /api/mocks/drivers | Generar repartidores ficticios |
+
 | POST | /api/mocks/generate | Insertar datos ficticios en MongoDB |
 
-El endpoint POST está restringido al entorno de desarrollo.
-
-### Logger
-
+El endpoint POST está restringido a los entornos de desarrollo y testing.
+Logger
 | Método | Ruta | Descripción |
+
 |---|---|---|
+
 | GET | /api/logger/test | Ejecutar pruebas de logging |
 
-El endpoint de prueba está restringido al entorno de desarrollo.
-
-## Respuestas HTTP documentadas
-
+El endpoint de prueba está restringido a los entornos de desarrollo y testing.
+Respuestas HTTP documentadas
 Los endpoints incluyen las respuestas HTTP que corresponden a sus operaciones.
 
 Entre ellas:
 
 | Código | Significado |
+
 |---|---|
+
 | 200 | Operación exitosa |
+
 | 201 | Recurso creado correctamente |
+
 | 400 | Datos o identificador inválido |
+
 | 403 | Operación no permitida |
+
 | 404 | Recurso no encontrado |
+
 | 409 | Conflicto por registro duplicado |
+
 | 500 | Error interno del servidor |
 
 Los errores utilizan la estructura uniforme implementada en el módulo 3.
-
-## Pruebas realizadas desde Swagger
-
+Pruebas realizadas desde Swagger
 Se verificaron los endpoints de pedidos y entregas directamente desde Swagger UI.
-
-### 1. Obtener todos los pedidos
-
+1. Obtener todos los pedidos
 GET http://localhost:8080/api/orders
 
 Resultado obtenido:
-
 - HTTP 200 OK.
-- Respuesta con `status: success`.
+- Respuesta con status: success.
 - Listado de pedidos registrados en MongoDB.
 - Información del cliente y la entrega asociada.
-
-### 2. Obtener todas las entregas
-
+2. Obtener todas las entregas
 GET http://localhost:8080/api/deliveries
 
 Resultado obtenido:
-
 - HTTP 200 OK.
-- Respuesta con `status: success`.
+- Respuesta con status: success.
 - Listado de entregas registradas en MongoDB.
 - Información del pedido y repartidor asociado.
-
-### 3. Identificador inválido en Orders
-
+3. Identificador inválido en Orders
 GET http://localhost:8080/api/orders/abc123
 
 Resultado obtenido: HTTP 400 Bad Request.
 
-```json
 {
+
   "status": "error",
+
   "code": "INVALID_ID",
+
   "message": "El identificador proporcionado no es válido"
+
 }
-```
 
-### 4. Pedido inexistente
-
+4. Pedido inexistente
 GET http://localhost:8080/api/orders/000000000000000000000000
 
 Resultado obtenido: HTTP 404 Not Found.
 
-```json
 {
+
   "status": "error",
+
   "code": "ORDER_NOT_FOUND",
+
   "message": "Pedido no encontrado"
+
 }
-```
 
-### 5. Identificador inválido en Deliveries
-
+5. Identificador inválido en Deliveries
 GET http://localhost:8080/api/deliveries/abc123
 
 Resultado obtenido: HTTP 400 Bad Request.
 
-```json
 {
+
   "status": "error",
+
   "code": "INVALID_ID",
+
   "message": "El identificador proporcionado no es válido"
+
 }
-```
 
-### 6. Entrega inexistente
-
+6. Entrega inexistente
 GET http://localhost:8080/api/deliveries/000000000000000000000000
 
 Resultado obtenido: HTTP 404 Not Found.
 
-```json
 {
+
   "status": "error",
+
   "code": "DELIVERY_NOT_FOUND",
+
   "message": "Entrega no encontrada"
+
 }
-```
 
 Estas pruebas permitieron verificar la correspondencia entre las respuestas de la API y los errores documentados en Swagger.
+Consideraciones de seguridad
+Swagger UI está disponible en /api/docs durante las pruebas locales.
 
-## Consideraciones de seguridad
-
-Swagger UI está disponible en `/api/docs` durante las pruebas locales.
-
-Los endpoints de pedidos y entregas implementados en este módulo son consultas de solo lectura.
+Las entregas tienen endpoints de consulta. Los pedidos también permiten creación y actualización de estado.
 
 Actualmente no incorporan autenticación ni autorización, por lo que deben protegerse antes de utilizar la API en un entorno público o de producción.
 
 La documentación no reemplaza los controles de seguridad del servidor.
 
----
 
-# Estructura principal del proyecto
+Módulo 6: Testing automatizado
+Se incorporaron Mocha, Chai y Supertest para verificar el comportamiento HTTP, las validaciones, los casos de error y la documentación. cross-env configura NODE_ENV=test de forma compatible entre sistemas operativos.
+Ejecución de los tests
+1. Iniciar MongoDB local.
+2. Crear .env.test con la configuración de testing indicada en la sección de variables de entorno.
+3. Desde la raíz del proyecto, ejecutar:
+npm test
+El script utiliza Mocha para ejecutar tests/**/*.test.js, con un timeout de 10 segundos por prueba.
+Pruebas implementadas
+Archivo	Tests	Qué verifica
+tests/users.test.js	9	Listado, creación, consulta, actualización, eliminación y errores
+tests/orders.test.js	9	Listado, creación, consulta, cambio de estado y validaciones
+tests/deliveries.test.js	4	Listado, consulta, identificadores inválidos y entregas inexistentes
+tests/mocks.test.js	6	Generación de usuarios y repartidores, inserción relacionada y cantidades inválidas
+tests/logger.test.js	2	Endpoint de prueba y formato de respuesta
+tests/swagger.test.js	6	Swagger UI, estructura OpenAPI, endpoints, POST, PATCH y estados permitidos
+tests/errors.test.js	6	Rutas inexistentes, identificadores inválidos, datos y estados incorrectos
+Total	42	Pruebas automatizadas
 
-```text
+
+Durante el desarrollo se obtuvo 42 passing en dos ejecuciones consecutivas.
+Base aislada y limpieza
+tests/helpers/testDb.js conecta, limpia y desconecta MongoDB. Las pruebas utilizan exclusivamente shipnow_test, comprueban que la conexión sea local y verifican el nombre de la base antes de borrar registros. Esta base es descartable y no debe contener información importante.
+
+Se prueban respuestas exitosas 200 y 201, así como errores 400 y 404, con estructuras JSON consistentes que incluyen status, code y message cuando corresponde.
+Buenas prácticas de testing
+- Separación entre la configuración de Express (src/app.js) y el arranque del servidor (src/server.js).
+- Pruebas organizadas por recurso.
+- Preparación y limpieza de datos de prueba.
+- Validación de respuestas HTTP y persistencia en MongoDB.
+- Comprobación de la documentación OpenAPI.
+- Ejecución repetida para detectar interferencias entre pruebas.
+Estructura principal del proyecto
+
 src/
+
+├── app.js
 ├── config/
+
 │   ├── env.config.js
+
 │   ├── logger.config.js
+
 │   └── swagger.config.js
+
 ├── constants/
+
 │   └── index.js
+
 ├── controllers/
-│   ├── usersContoller.js
+
+│   ├── usersController.js
+
 │   ├── productsController.js
+
 │   ├── mocksController.js
+
 │   ├── ordersController.js
+
 │   └── deliveriesController.js
+
 ├── docs/
+
 │   ├── schemas.yaml
+
 │   ├── users.yaml
+
 │   ├── orders.yaml
+
 │   ├── deliveries.yaml
+
 │   ├── mocks.yaml
+
 │   └── logger.yaml
+
 ├── errors/
+
 │   ├── CustomError.js
+
 │   └── errorDictionary.js
+
 ├── middlewares/
+
 │   └── errorHandler.js
+
 ├── models/
+
 │   ├── user.model.js
+
 │   ├── product.model.js
+
 │   ├── order.model.js
+
 │   └── delivery.model.js
+
 ├── repositories/
+
 │   ├── user.repository.js
+
 │   ├── product.repository.js
+
 │   ├── mocks.repository.js
+
 │   ├── order.repository.js
+
 │   └── delivery.repository.js
+
 ├── routes/
+
 │   ├── users.js
+
 │   ├── products.js
+
 │   ├── mocks.router.js
+
 │   ├── logger.router.js
+
 │   ├── orders.router.js
+
 │   └── deliveries.router.js
+
 ├── services/
+
 │   ├── usersService.js
+
 │   ├── productsService.js
+
 │   ├── mocksService.js
+
 │   ├── ordersService.js
+
 │   └── deliveriesService.js
+
 ├── utils/
+
 │   └── mockGenerator.js
+
 └── server.js
-```
-
-## Consideraciones finales
-
+tests/
+├── helpers/
+│   └── testDb.js
+├── users.test.js
+├── orders.test.js
+├── deliveries.test.js
+├── mocks.test.js
+├── logger.test.js
+├── swagger.test.js
+└── errors.test.js
+Consideraciones finales
 - Los mocks permiten generar información ficticia para pruebas.
 - Los datos respetan los modelos y las constantes del proyecto.
 - Las relaciones se mantienen mediante referencias de MongoDB.
 - Las contraseñas almacenadas se protegen mediante hashes.
 - Se recomienda utilizar una base de datos independiente para las pruebas.
-- El archivo `.env`, la carpeta `node_modules/` y los archivos de `logs/` no deben subirse al repositorio.
+- El archivo .env, la carpeta node_modules/ y los archivos de logs/ no deben subirse al repositorio.
 - El manejo de errores se encuentra centralizado mediante un middleware global.
 - Winston permite registrar eventos relevantes y conservar errores en archivos rotativos.
 - Swagger permite consultar y probar los endpoints documentados desde el navegador.
-- Las rutas de pedidos y entregas deberán incorporar controles de acceso antes de un despliegue público.
-
-## Autor
-
+- Las rutas de pedidos y entregas deberán incorporar controles de acceso antes de un despliegue público. La API es un proyecto académico y no está preparada para exposición pública sin autenticación y autorización.
+Autor
 Gastón Brecciaroli
 
 Programación Backend III - Coderhouse

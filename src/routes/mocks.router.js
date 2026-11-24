@@ -7,19 +7,25 @@ import { ERROR_CODES } from '../errors/errorDictionary.js';
 
 const router = Router();
 
-// Devuelve clientes ficticios sin guardarlos
-router.get('/users', (req, res, next) =>
-    mocksController.getUsers(req, res, next)
-);
+// Obtener usuarios ficticios
+router.get('/users', (req, res, next) => {
+    return mocksController.getUsers(req, res, next);
+});
 
-// Devuelve repartidores ficticios sin guardarlos
-router.get('/drivers', (req, res, next) =>
-    mocksController.getDrivers(req, res, next)
-);
+// Obtener repartidores ficticios
+router.get('/drivers', (req, res, next) => {
+    return mocksController.getDrivers(req, res, next);
+});
 
-// Inserta datos de prueba en MongoDB
+// Generar datos ficticios
 router.post('/generate', (req, res, next) => {
-    if (process.env.NODE_ENV !== 'development') {
+
+    const allowedEnvironments = [
+        'development',
+        'test'
+    ];
+
+    if (!allowedEnvironments.includes(process.env.NODE_ENV)) {
         return next(
             CustomError.create(ERROR_CODES.MOCKS_NOT_ALLOWED)
         );

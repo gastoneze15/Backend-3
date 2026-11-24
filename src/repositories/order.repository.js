@@ -17,6 +17,29 @@ class OrderRepository {
             .lean();
     }
 
+    async create(orderData) {
+        const order = await Order.create(orderData);
+
+        return await this.findById(order._id);
+    }
+
+    async updateStatus(id, status) {
+        const order = await Order.findByIdAndUpdate(
+            id,
+            { status },
+            {
+                new: true,
+                runValidators: true
+            }
+        );
+
+        if (!order) {
+            return null;
+        }
+
+        return await this.findById(order._id);
+    }
+
 }
 
 export default new OrderRepository();
